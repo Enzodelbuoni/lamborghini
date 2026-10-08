@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { ScrollTrigger } from './lib/gsap'
 import { SEGMENTS } from './config/experience'
 import { loadVideo } from './lib/loadVideo'
+import { createSmoothScroll, destroySmoothScroll, lockScroll } from './lib/smoothScroll'
 import Header from './components/Header/Header'
 import LoadingScreen from './components/LoadingScreen/LoadingScreen'
 import HeroExperience from './components/HeroExperience/HeroExperience'
@@ -30,6 +31,7 @@ export default function App() {
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
     window.scrollTo(0, 0)
     document.documentElement.classList.add('is-loading')
+    createSmoothScroll()
     document.fonts?.ready.then(() => ScrollTrigger.refresh())
 
     const abort = new AbortController()
@@ -49,6 +51,7 @@ export default function App() {
     return () => {
       abort.abort()
       urls.forEach((url) => url.startsWith('blob:') && URL.revokeObjectURL(url))
+      destroySmoothScroll()
     }
   }, [])
 
@@ -56,6 +59,7 @@ export default function App() {
   const handleLoaderLeave = useCallback(() => setPhase('leaving'), [])
   const handleLoaderExited = useCallback(() => {
     document.documentElement.classList.remove('is-loading')
+    lockScroll(false)
     setPhase('entered')
     ScrollTrigger.refresh()
   }, [])

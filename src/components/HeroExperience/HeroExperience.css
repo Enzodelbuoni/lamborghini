@@ -74,13 +74,9 @@
 }
 
 /* ---------- light outside the clip (HeroLight.jsx) ----------
-   Everything sits behind the clip, so the footage always wins where it exists.
-   - beams: one cone per headlight = a flat cool-white light shaped by two
-     masks — a conic gradient (angular profile, still alive at the corner) ×
-     a radial falloff from the headlight;
-   - spill: the clip's own edge colours continued outwards (set per frame),
-     screened over the beams, so the lit floor never stops at a "wall".
-   Dark grain dithers the soft gradients so they never band. */
+   Beams + floor spill are drawn on one small canvas behind the clip and
+   scaled up by the GPU (soft light loses nothing). The grain sits on top of
+   it, static: invisible on black, it only dithers the light so it never bands. */
 
 .video-stage__light {
   position: absolute;
@@ -89,89 +85,18 @@
   visibility: hidden;
 }
 
-.video-stage__beams {
+.video-stage__light-canvas {
   position: absolute;
   inset: 0;
-  opacity: calc(var(--level, 0) * 0.46);
+  width: 100%;
+  height: 100%;
+  max-width: none;
 }
 
-.video-stage__spill {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  opacity: 0;
-  mix-blend-mode: screen;
-  background-repeat: repeat, no-repeat;
-  background-size: auto, 100% 100%;
-}
-
-.video-stage__beam {
+.video-stage__light-grain {
   position: absolute;
   inset: 0;
-  background: url('/images/grain-dark.png') repeat, rgb(222 230 245);
-  -webkit-mask-composite: source-in;
-  mask-composite: intersect;
-
-  --at: calc(var(--x, 0) * 1px) calc(var(--y, 0) * 1px);
-  --falloff: radial-gradient(
-    circle at var(--at),
-    #000 0,
-    rgba(0, 0, 0, 0.75) calc(var(--reach, 1) * 0.45px),
-    rgba(0, 0, 0, 0.42) calc(var(--reach, 1) * 1px),
-    rgba(0, 0, 0, 0) calc(var(--reach, 1) * 1.35px)
-  );
-}
-
-/* inner edge first (straight down), fading out past the bottom-left corner */
-.video-stage__beam--left {
-  -webkit-mask-image:
-    conic-gradient(
-      from calc(var(--from, 0) * 1deg) at var(--at),
-      rgba(0, 0, 0, 0) 0deg,
-      #000 calc(var(--span, 0) * 0.25deg),
-      rgba(0, 0, 0, 0.7) calc(var(--span, 0) * 0.6deg),
-      rgba(0, 0, 0, 0.35) calc(var(--span, 0) * 0.88deg),
-      rgba(0, 0, 0, 0) calc(var(--span, 0) * 1deg),
-      rgba(0, 0, 0, 0) 360deg
-    ),
-    var(--falloff);
-  mask-image:
-    conic-gradient(
-      from calc(var(--from, 0) * 1deg) at var(--at),
-      rgba(0, 0, 0, 0) 0deg,
-      #000 calc(var(--span, 0) * 0.25deg),
-      rgba(0, 0, 0, 0.7) calc(var(--span, 0) * 0.6deg),
-      rgba(0, 0, 0, 0.35) calc(var(--span, 0) * 0.88deg),
-      rgba(0, 0, 0, 0) calc(var(--span, 0) * 1deg),
-      rgba(0, 0, 0, 0) 360deg
-    ),
-    var(--falloff);
-}
-
-/* mirrored: outer edge first (past the bottom-right corner), inner edge last */
-.video-stage__beam--right {
-  -webkit-mask-image:
-    conic-gradient(
-      from calc(var(--from, 0) * 1deg) at var(--at),
-      rgba(0, 0, 0, 0) 0deg,
-      rgba(0, 0, 0, 0.35) calc(var(--span, 0) * 0.12deg),
-      rgba(0, 0, 0, 0.7) calc(var(--span, 0) * 0.4deg),
-      #000 calc(var(--span, 0) * 0.75deg),
-      rgba(0, 0, 0, 0) calc(var(--span, 0) * 1deg),
-      rgba(0, 0, 0, 0) 360deg
-    ),
-    var(--falloff);
-  mask-image:
-    conic-gradient(
-      from calc(var(--from, 0) * 1deg) at var(--at),
-      rgba(0, 0, 0, 0) 0deg,
-      rgba(0, 0, 0, 0.35) calc(var(--span, 0) * 0.12deg),
-      rgba(0, 0, 0, 0.7) calc(var(--span, 0) * 0.4deg),
-      #000 calc(var(--span, 0) * 0.75deg),
-      rgba(0, 0, 0, 0) calc(var(--span, 0) * 1deg),
-      rgba(0, 0, 0, 0) 360deg
-    ),
-    var(--falloff);
+  background: url('/images/grain-dark.png') repeat;
 }
 
 /* phones: the clip covers the whole stage, nothing would show */

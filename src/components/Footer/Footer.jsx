@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { gsap, useGSAP } from '../../lib/gsap'
 import { riseIn, drawLines, fadeUp } from '../../lib/reveal'
+import { scrollToTarget } from '../../lib/smoothScroll'
 import './Footer.css'
 
 export default function Footer() {
@@ -23,7 +24,7 @@ export default function Footer() {
 
   const toTop = (event) => {
     event.preventDefault()
-    gsap.to(window, { scrollTo: { y: 0, autoKill: true }, duration: 2.4, ease: 'power3.inOut' })
+    scrollToTarget(0, 2.4)
   }
 
   return (

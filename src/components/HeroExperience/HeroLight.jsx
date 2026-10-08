@@ -1,155 +1,181 @@
 import { useEffect, useRef } from 'react'
-import { HEADLIGHTS } from '../../content/headlights'
+import { HEADLIGHTS, EDGE_LIGHT } from '../../content/headlights'
 
-/** CSS conic angle (0° = up, clockwise) of the direction (dx, dy). */
-const angleOf = (dx, dy) => ((Math.atan2(dx, -dy) * 180) / Math.PI + 360) % 360
-const clamp = (v, min, max) => Math.min(max, Math.max(min, v))
+const LAST_FRAME = HEADLIGHTS.length - 1
+const ROWS = EDGE_LIGHT.rows
+const EDGE = Uint8Array.from(atob(EDGE_LIGHT.data), (c) => c.charCodeAt(0))
 
-const SOURCE_W = 720 // clip pixels
-const SOURCE_H = 1280
-const EDGE_STRIP = 36 // clip columns sampled at each side (5 %)
-const ROWS = 64 // vertical resolution of the edge light
 const FEATHER = 0.2 // share of the clip width that dissolves at each side (see HeroExperience.css)
 const CRUSH = 0.3 // extra contrast on the clip while the headlights are still off
 const IGNITION_END = 60 // frames after this never get the opening darkness
-const GRAIN = 'url("/images/grain-dark.png")'
+const BEAM_ALPHA = 0.46 // beam opacity at light level 1
+const TINT = [222, 230, 245] // cool white of the LEDs
+const MAX_BACKING = 960 // the light is soft: drawn small, scaled up by the GPU
 
-const smoothstep = (a, b, x) => {
-  const t = clamp((x - a) / (b - a), 0, 1)
-  return t * t * (3 - 2 * t)
+const clamp = (v, min, max) => Math.min(max, Math.max(min, v))
+const lerp = (a, b, t) => a + (b - a) * t
+/** CSS conic angle (0° = up, clockwise) of the direction (dx, dy). */
+const angleOf = (dx, dy) => ((Math.atan2(dx, -dy) * 180) / Math.PI + 360) % 360
+const rgba = (a, k = 1) => `rgba(${TINT.map((c) => Math.round(c * k)).join(',')},${a})`
+
+/** Headlight row for a fractional frame, interpolated between its two neighbours. */
+function headlightsAt(frame) {
+  const f0 = clamp(Math.floor(frame), 0, LAST_FRAME)
+  const f1 = Math.min(LAST_FRAME, f0 + 1)
+  const t = clamp(frame - f0, 0, 1)
+  return HEADLIGHTS[f0].map((v, i) => lerp(v, HEADLIGHTS[f1][i], t))
+}
+
+/** Floor light (0–1) at the clip's border, for a fractional frame. side 0 = left, 1 = right. */
+function edgeAt(frame, side, row) {
+  const f0 = clamp(Math.floor(frame), 0, LAST_FRAME)
+  const f1 = Math.min(LAST_FRAME, f0 + 1)
+  const t = clamp(frame - f0, 0, 1)
+  return lerp(EDGE[(f0 * 2 + side) * ROWS + row], EDGE[(f1 * 2 + side) * ROWS + row], t) / 255
 }
 
 /**
- * Edge colours → a smooth vertical light profile. Only light survives (blacks
- * stay black) and only the floor carries it: rows above the headlights'
- * horizon fade out, so ceiling lamps or the car body never smear sideways.
- */
-function profile(data, column, horizon) {
-  const rows = []
-  for (let i = 0; i < ROWS; i++) {
-    const o = (i * 2 + column) * 4
-    rows.push([data[o], data[o + 1], data[o + 2]].map((v) => Math.max(0, v - 16) * (255 / 239)))
-  }
-  // [1 2 3 2 1] blur along the height, so floor texture doesn't turn into stripes
-  const weights = [1, 2, 3, 2, 1]
-  const stops = rows.map((_, i) => {
-    const rgb = [0, 0, 0]
-    let total = 0
-    weights.forEach((w, k) => {
-      const row = rows[i + k - 2]
-      if (!row) return
-      rgb[0] += row[0] * w
-      rgb[1] += row[1] * w
-      rgb[2] += row[2] * w
-      total += w
-    })
-    const v = (i + 0.5) / ROWS
-    const floor = smoothstep(horizon - 0.03, horizon + 0.1, v)
-    const [r, g, b] = rgb.map((c) => Math.round((c / total) * floor))
-    return `rgb(${r} ${g} ${b}) ${(v * 100).toFixed(2)}%`
-  })
-  return `linear-gradient(180deg, ${stops.join(', ')})`
-}
-
-/**
- * All the light that lives outside the clip, synced to the frame on screen:
+ * All the light that lives outside the clip, drawn on one small canvas
+ * behind it (the GPU scales it up — soft light loses nothing):
  *
- * - spill: the colours at the clip's left / right edge, continued outwards and
- *   faded — the lit floor keeps going past the clip instead of stopping at a wall;
  * - beams: one cone per headlight, from its measured position down to the
  *   bottom corners (a wide V);
- * - opening darkness: while the headlights are still off, the clip gets a touch
+ * - spill: the clip's own lit floor, continued past its borders and faded, so
+ *   the light never stops at a "wall". Precomputed per frame (floor only —
+ *   no headlight glare, bodywork or ceiling lamps), no video reads at runtime;
+ * - opening darkness: while the headlights are still off the clip gets a touch
  *   more contrast, sinking the source's blocky near-blacks into pure black.
  *
- * Driven by `apiRef.current.show(segment, frame, video)` from the controller.
+ * Driven by `apiRef.current.update(segment, frame)` with a fractional frame,
+ * so the light glides between video frames. A static grain layer on top
+ * dithers the gradients.
  */
 export default function HeroLight({ apiRef }) {
   const rootRef = useRef(null)
+  const canvasRef = useRef(null)
 
   useEffect(() => {
     const root = rootRef.current
+    const canvas = canvasRef.current
     const stage = root.parentElement
     const frameEl = stage.querySelector('.video-stage__frame')
-    const beams = root.querySelector('.video-stage__beams')
-    const [leftBeam, rightBeam] = beams.children
-    const leftSpill = root.querySelector('.video-stage__spill--left')
-    const rightSpill = root.querySelector('.video-stage__spill--right')
-
-    const sampler = document.createElement('canvas')
-    sampler.width = 2
-    sampler.height = ROWS
-    const ctx = sampler.getContext('2d', { willReadFrequently: true })
+    const ctx = canvas.getContext('2d')
+    const layer = document.createElement('canvas') // scratch space for one beam / one spill
+    const lctx = layer.getContext('2d')
+    const canConic = typeof lctx.createConicGradient === 'function'
 
     let layout = null
-    let lightShown = true // false on phones, where the clip covers the whole stage
-    let current = { segment: 0, frame: 0, video: null }
+    let shown = true // false on phones, where the clip covers the whole stage
+    let current = { segment: 0, frame: 0 }
 
     // side: -1 = left headlight → bottom-left corner, 1 = right → bottom-right
-    const aim = (beam, x, y, side) => {
-      const { W, H } = layout
-      const down = angleOf(0, H - y) // inner edge: straight down, hidden behind the clip
-      const wide = angleOf((side < 0 ? -0.25 : 1.25) * W - x, H - y) // outer edge passes beyond the corner
-      const corner = side < 0 ? 0 : W
-      beam.style.setProperty('--x', x.toFixed(1))
-      beam.style.setProperty('--y', y.toFixed(1))
-      beam.style.setProperty('--from', (side < 0 ? down : wide).toFixed(2))
-      beam.style.setProperty('--span', Math.abs(wide - down).toFixed(2))
-      beam.style.setProperty('--reach', Math.hypot(corner - x, H - y).toFixed(1))
+    const drawBeam = (side, x, y) => {
+      const { w, h } = layout
+      const down = angleOf(0, h - y) // inner edge: straight down, hidden behind the clip
+      const wide = angleOf((side < 0 ? -0.25 : 1.25) * w - x, h - y) // outer edge passes beyond the corner
+      const from = side < 0 ? down : wide
+      const k = Math.abs(wide - down) / 360
+      const reach = Math.hypot((side < 0 ? 0 : w) - x, h - y)
+
+      lctx.globalCompositeOperation = 'source-over'
+      lctx.clearRect(0, 0, w, h)
+      const cone = lctx.createConicGradient(((from - 90) * Math.PI) / 180, x, y)
+      const stops =
+        side < 0
+          ? [[0, 0], [0.25, 1], [0.6, 0.7], [0.88, 0.35], [1, 0]]
+          : [[0, 0], [0.12, 0.35], [0.4, 0.7], [0.75, 1], [1, 0]]
+      stops.forEach(([at, a]) => cone.addColorStop(at * k, rgba(a)))
+      cone.addColorStop(1, rgba(0))
+      lctx.fillStyle = cone
+      lctx.fillRect(0, 0, w, h)
+
+      const falloff = lctx.createRadialGradient(x, y, 0, x, y, reach * 1.35)
+      falloff.addColorStop(0, 'rgba(0,0,0,1)')
+      falloff.addColorStop(0.45 / 1.35, 'rgba(0,0,0,0.75)')
+      falloff.addColorStop(1 / 1.35, 'rgba(0,0,0,0.42)')
+      falloff.addColorStop(1, 'rgba(0,0,0,0)')
+      lctx.globalCompositeOperation = 'destination-in'
+      lctx.fillStyle = falloff
+      lctx.fillRect(0, 0, w, h)
     }
 
-    const paintSpill = (video, opacity, horizon) => {
-      leftSpill.style.opacity = String(opacity)
-      rightSpill.style.opacity = String(opacity)
-      if (opacity <= 0 || !video || video.readyState < 2) return
-      ctx.drawImage(video, 0, 0, EDGE_STRIP, SOURCE_H, 0, 0, 1, ROWS)
-      ctx.drawImage(video, SOURCE_W - EDGE_STRIP, 0, EDGE_STRIP, SOURCE_H, 1, 0, 1, ROWS)
-      const { data } = ctx.getImageData(0, 0, 2, ROWS)
-      leftSpill.style.backgroundImage = `${GRAIN}, ${profile(data, 0, horizon)}`
-      rightSpill.style.backgroundImage = `${GRAIN}, ${profile(data, 1, horizon)}`
+    // the spill hugs the clip: fully lit under its dissolving edge, then fades out
+    const drawSpill = (side, frame) => {
+      const { w, h, fx, fw, s } = layout
+      const overlap = fw * FEATHER
+      const inner = side === 0 ? fx + overlap : fx + fw - overlap // x where the clip is fully opaque
+      const reach = side === 0 ? clamp(fx * 0.55, 0, 700 * s) : clamp((w - fx - fw) * 0.55, 0, 700 * s)
+      const outer = side === 0 ? fx - reach : fx + fw + reach
+
+      lctx.globalCompositeOperation = 'source-over'
+      lctx.clearRect(0, 0, w, h)
+      const column = lctx.createLinearGradient(0, 0, 0, h)
+      for (let r = 0; r < ROWS; r++) column.addColorStop((r + 0.5) / ROWS, rgba(1, edgeAt(frame, side, r)))
+      lctx.fillStyle = column
+      lctx.fillRect(Math.min(inner, outer), 0, Math.abs(outer - inner), h)
+
+      const fade = lctx.createLinearGradient(inner, 0, outer, 0)
+      const span = Math.abs(outer - inner)
+      const at = (px) => clamp(px / span, 0, 1)
+      fade.addColorStop(0, 'rgba(0,0,0,1)')
+      fade.addColorStop(at(overlap), 'rgba(0,0,0,1)')
+      fade.addColorStop(at(overlap + reach * 0.18), 'rgba(0,0,0,0.78)')
+      fade.addColorStop(at(overlap + reach * 0.42), 'rgba(0,0,0,0.46)')
+      fade.addColorStop(at(overlap + reach * 0.7), 'rgba(0,0,0,0.17)')
+      fade.addColorStop(1, 'rgba(0,0,0,0)')
+      lctx.globalCompositeOperation = 'destination-in'
+      lctx.fillStyle = fade
+      lctx.fillRect(0, 0, w, h)
     }
 
     const render = () => {
       if (!layout) return
-      const row = current.segment === 0 ? HEADLIGHTS[current.frame] : null
+      const { segment, frame } = current
+      const row = segment === 0 ? headlightsAt(frame) : null
       const level = row ? row[4] : 0
 
       // opening darkness fades out as the headlights come on. Only at the opening:
       // the light also drops to 0 when the car passes the camera, and the clip must
       // stay untouched there so the cut into clip 2 keeps matching brightness.
-      const crush = row && current.frame < IGNITION_END ? clamp(1 - level * 1.7, 0, 1) : 0
+      const crush = row && frame < IGNITION_END ? clamp(1 - level * 1.7, 0, 1) : 0
       frameEl.style.filter = crush > 0.005 ? `contrast(${(1 + CRUSH * crush).toFixed(3)})` : ''
 
-      root.style.visibility = level > 0.002 ? 'visible' : 'hidden'
-      beams.style.setProperty('--level', level.toFixed(3))
-      if (!row || level <= 0.002 || !lightShown) return
+      const lit = shown && row && level > 0.002
+      root.style.visibility = lit ? 'visible' : 'hidden'
+      if (!lit) return
 
-      const { H, fx, fw } = layout
-      aim(leftBeam, fx + row[0] * fw, row[1] * H, -1)
-      aim(rightBeam, fx + row[2] * fw, row[3] * H, 1)
-      paintSpill(current.video, Math.min(1, level * 4), (row[1] + row[3]) / 2)
-    }
+      const { w, h, fx, fw } = layout
+      ctx.clearRect(0, 0, w, h)
 
-    // the spill hugs the clip: fully opaque under its dissolving edge, then fades out
-    const placeSpill = (el, left, width, overlap, towards) => {
-      el.style.left = `${left.toFixed(1)}px`
-      el.style.width = `${width.toFixed(1)}px`
-      const reach = width - overlap
-      const at = (k) => `${(overlap + reach * k).toFixed(1)}px`
-      const mask = `linear-gradient(${towards}, #000 0px, #000 ${overlap.toFixed(1)}px, rgba(0,0,0,0.78) ${at(0.18)}, rgba(0,0,0,0.46) ${at(0.42)}, rgba(0,0,0,0.17) ${at(0.7)}, rgba(0,0,0,0) ${width.toFixed(1)}px)`
-      el.style.webkitMaskImage = mask
-      el.style.maskImage = mask
+      if (canConic) {
+        ctx.globalCompositeOperation = 'lighter'
+        ctx.globalAlpha = Math.min(1, level * BEAM_ALPHA)
+        drawBeam(-1, fx + row[0] * fw, row[1] * h)
+        ctx.drawImage(layer, 0, 0)
+        drawBeam(1, fx + row[2] * fw, row[3] * h)
+        ctx.drawImage(layer, 0, 0)
+      }
+
+      ctx.globalCompositeOperation = 'screen'
+      ctx.globalAlpha = Math.min(1, level * 4)
+      drawSpill(0, frame)
+      ctx.drawImage(layer, 0, 0)
+      drawSpill(1, frame)
+      ctx.drawImage(layer, 0, 0)
+      ctx.globalCompositeOperation = 'source-over'
+      ctx.globalAlpha = 1
     }
 
     const measure = () => {
-      const s = stage.getBoundingClientRect()
+      const st = stage.getBoundingClientRect()
       const f = frameEl.getBoundingClientRect()
-      layout = { W: s.width, H: s.height, fx: f.left - s.left, fw: f.width }
-      lightShown = getComputedStyle(root).display !== 'none'
-      const overlap = f.width * FEATHER
-      const leftReach = clamp(layout.fx * 0.55, 0, 700)
-      const rightReach = clamp((layout.W - layout.fx - f.width) * 0.55, 0, 700)
-      placeSpill(leftSpill, layout.fx - leftReach, leftReach + overlap, overlap, 'to left')
-      placeSpill(rightSpill, layout.fx + f.width - overlap, rightReach + overlap, overlap, 'to right')
+      shown = getComputedStyle(root).display !== 'none'
+      const s = Math.min(0.5, MAX_BACKING / Math.max(1, st.width)) // backing pixels per CSS pixel
+      const w = Math.max(1, Math.round(st.width * s))
+      const h = Math.max(1, Math.round(st.height * s))
+      canvas.width = layer.width = w
+      canvas.height = layer.height = h
+      layout = { s, w, h, fx: (f.left - st.left) * s, fw: f.width * s }
       render()
     }
 
@@ -158,9 +184,9 @@ export default function HeroLight({ apiRef }) {
     measure()
 
     apiRef.current = {
-      show(segment, frame, video) {
-        if (frame < 0) return
-        current = { segment, frame: Math.min(frame, HEADLIGHTS.length - 1), video }
+      update(segment, frame) {
+        if (segment === current.segment && Math.abs(frame - current.frame) < 0.01) return
+        current = { segment, frame: clamp(frame, 0, LAST_FRAME) }
         render()
       },
     }
@@ -174,12 +200,8 @@ export default function HeroLight({ apiRef }) {
 
   return (
     <div ref={rootRef} className="video-stage__light" aria-hidden="true">
-      <div className="video-stage__beams">
-        <span className="video-stage__beam video-stage__beam--left" />
-        <span className="video-stage__beam video-stage__beam--right" />
-      </div>
-      <span className="video-stage__spill video-stage__spill--left" />
-      <span className="video-stage__spill video-stage__spill--right" />
+      <canvas ref={canvasRef} className="video-stage__light-canvas" />
+      <span className="video-stage__light-grain" />
     </div>
   )
 }

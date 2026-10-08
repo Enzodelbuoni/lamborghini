@@ -41,4 +41,5 @@ export const CHAPTERS = [
   { index: '03', label: 'Camera Rise', from: TRANSITION_POINT },
 ]
 
-export const SCRUB_SMOOTHING = 0.45 // seconds for the playhead to catch up with the scroll
+// seconds for the playhead to catch up with the scroll (Lenis already smooths the wheel)
+export const SCRUB_SMOOTHING = 0.3

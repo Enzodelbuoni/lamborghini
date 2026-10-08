@@ -34,8 +34,6 @@ export default function HeroExperience({ sources, phase, onReady }) {
     controllerRef.current = new ExperienceController({
       segments: SEGMENTS,
       transitionPoint: TRANSITION_POINT,
-      // the light outside the clip follows the frame that is really on screen
-      onFrame: (video, segment, frame) => lightRef.current?.show(segment, frame, video),
     })
   }
 
@@ -87,6 +85,9 @@ export default function HeroExperience({ sources, phase, onReady }) {
         onUpdate: () => {
           const p = proxy.progress
           controller.setProgress(p)
+          // the light glides with the exact (fractional) frame, between video frames too
+          const { index, frame } = controller.locate(p)
+          lightRef.current?.update(index, frame)
           copyTimelineRef.current?.progress(p)
           galleryTimelineRef.current?.progress(p)
           if (progressRef.current) progressRef.current.style.transform = `scaleX(${p})`

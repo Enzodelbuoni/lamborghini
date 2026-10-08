@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { gsap, ScrollTrigger, useGSAP } from '../../lib/gsap'
+import { lockScroll, scrollToTarget } from '../../lib/smoothScroll'
 import './Header.css'
 
 const LINKS = [
@@ -16,6 +17,7 @@ export default function Header({ visible }) {
   const menuRef = useRef(null)
   const menuTl = useRef(null)
   const [open, setOpen] = useState(false)
+  const wasOpen = useRef(false)
   const [solid, setSolid] = useState(false)
   const [light, setLight] = useState(false)
 
@@ -68,6 +70,11 @@ export default function Header({ visible }) {
     if (!tl) return
     if (open) tl.timeScale(1).play()
     else tl.timeScale(1.6).reverse()
+    // only real menu toggles touch the scroll — never the initial mount (loading screen)
+    if (open !== wasOpen.current) {
+      wasOpen.current = open
+      lockScroll(open)
+    }
   }, [open])
 
   useEffect(() => {
@@ -80,7 +87,7 @@ export default function Header({ visible }) {
   const go = (event, href) => {
     event.preventDefault()
     setOpen(false)
-    gsap.to(window, { scrollTo: { y: href, autoKill: true }, duration: 1.8, ease: 'power3.inOut', delay: 0.35 })
+    gsap.delayedCall(0.35, () => scrollToTarget(href, 1.8)) // let the menu fold first
   }
 
   return (

@@ -3,12 +3,14 @@ MEMÓRIA DO PROJETO — LAMBORGHINI SVJ CINEMATIC SCROLL
 (Regra do info.txt: tudo de importante que for modificado deve ser registrado aqui.)
 
 ## STATUS ATUAL (2026-10-08)
-ETAPA 5.1 (branch farois, EM AVALIAÇÃO) — luz dos faróis refinada a pedido do usuário:
-  (a) as "paredes" do vídeo vertical cortavam a luz → a luz do chão agora CONTINUA além das bordas;
-  (b) início escuro muito pixelado → escurecimento só na abertura, antes dos faróis acenderem.
+ETAPA 5.2 (branch farois, EM AVALIAÇÃO) — correção do "farol indo pro lado" + animação mais fluida:
+  (a) num trecho da aproximação a luz esticava os faróis/teto na horizontal → luz da borda agora é
+      pré-calculada e SÓ do chão;
+  (b) fluidez: luz desenhada num único canvas leve, sem ler o vídeo durante o scroll, interpolando
+      entre frames + rolagem suave com Lenis.
 Se o usuário não gostar: git switch main (volta para a versão da etapa 4, sem faróis).
-(ETAPA 1: base. 2: textos do hero + Design. 3: hero 3 colunas, galeria, Engine, Marquee, seção clara,
- grão, cursor. 4: contador à prova de falhas + grade bento. 5: feixes de luz dos faróis.)
+(ETAPA 1: base. 2: textos + Design. 3: hero 3 colunas, galeria, Engine, Marquee, seção clara, grão,
+ cursor. 4: contador + grade bento. 5: feixes dos faróis. 5.1: sem "paredes" + abertura escurecida.)
 - Rodar:  npm install  →  npm run dev  →  http://localhost:5173
 - Build:  npm run build (gera dist/)
 - Próximos passos possíveis: ver "PENDÊNCIAS / IDEIAS" no fim do arquivo.
@@ -67,6 +69,35 @@ Se o usuário não gostar: git switch main (volta para a versão da etapa 4, sem
   e ali o vídeo não pode ser alterado para o corte com o vídeo 2 continuar com o mesmo brilho.
 - Celular: camada de luz oculta e sem leitura do vídeo (economia); o escurecimento inicial vale também.
 
+## ETAPA 5.2 — farol "indo pro lado" + fluidez
+- Bug relatado (print do usuário): num frame da aproximação a luz dos faróis ia para o lado na
+  horizontal e acendia um pedaço do teto à esquerda.
+  Causa: a "continuação da borda" lia as bordas do vídeo em tempo real; quando o carro chega perto
+  (frames ~125–150) os FARÓIS, a lataria e as lâmpadas do teto encostam na borda do vídeo e eram
+  esticados para os lados.
+- Correção: scripts/track-headlights.mjs agora também gera EDGE_LIGHT (em src/content/headlights.js):
+  para cada frame, as 6 colunas externas (3%) de cada lado, em 48 faixas de altura, guardando SÓ o chão:
+  tudo acima de um "horizonte" abaixo dos faróis é zerado (horizonte = altura dos faróis + 0.10, que
+  desce +0.12 entre os frames 120 e 150 conforme o carro ocupa a tela). Suavizado na altura [1 2 1] e
+  no tempo [1 2 3 2 1] (sem cintilar). Base64, ~16 KB. Verificado com imagem "borda × tempo".
+- HeroLight.jsx reescrito: tudo (cones + luz do chão) desenhado num ÚNICO canvas em baixa resolução
+  (máx. 960 px de largura, escalado pela GPU — luz suave não perde nada) + camada estática de grão por
+  cima. Nada de máscaras CSS repintadas, nada de getImageData (que travava a renderização).
+- Fluidez:
+  - a luz recebe o frame FRACIONÁRIO (ExperienceController.locate(p) → ex.: 97,4) e interpola entre
+    frames → desliza continuamente em vez de pular de frame em frame;
+  - Lenis (npm "lenis" 1.3.26): rolagem suave da roda do mouse, rodando no ticker do GSAP
+    (src/lib/smoothScroll.js: createSmoothScroll / lockScroll / scrollToTarget). lerp 0.1.
+    Toque (celular) continua nativo. Parado durante o loading e com o menu aberto.
+    Menu e "Replay the approach" usam scrollToTarget (realinha o Lenis antes de deslizar).
+  - SCRUB_SMOOTHING 0.45 → 0.3 (o Lenis já suaviza).
+  - Medição A/B (mesma rolagem, Chrome headless 1920x1080): JavaScript 2,2 s → 0,47 s; trabalho total
+    2,95 s → 1,72 s; frames de vídeo exibidos 265 → 275.
+- Observação: após girar a roda, o Lenis desliza ~1 s; se arrastar a barra de rolagem nesse instante,
+  ele "segura" o arrasto até terminar (comportamento normal do Lenis).
+- Observação: o usuário roda o próprio "npm run dev", que fica na porta 5174 (a 5173 é do servidor do
+  Claude). As duas servem a mesma pasta.
+
 ## ANÁLISE DOS VÍDEOS ORIGINAIS (pasta videos-lambo/, NÃO MODIFICAR)
 - Ambos: H.264, 720x1280 (VERTICAL 9:16), 24fps, 8s, 192 frames, com áudio.
 - VÍDEO 1 (aproximação) = "Lamborghini_accelerates_toward_c…_20261008141443.mp4"
@@ -120,6 +151,7 @@ src/
   config/experience.js          → FRAMES DE CORTE, TRANSITION_POINT, CAPÍTULOS, SCRUB_SMOOTHING, AMBIENT_LIGHT  ← AJUSTES FINOS AQUI
   lib/gsap.js                   → registro dos plugins (ignoreMobileResize)
   lib/loadVideo.js              → fetch com progresso → blob URL; whenVideoReady; primeVideo (play/pause p/ iOS)
+  lib/smoothScroll.js           → Lenis (rolagem suave), trava/destrava, scrollToTarget
   lib/reveal.js                 → animações reutilizáveis: riseIn, drawLines, fadeUp, countUp.
                                   countUp (números contam até o valor de data-count) — REGRAS anti-"0":
                                     • valor final vem SEMPRE do atributo data-count, nunca do texto;
@@ -145,7 +177,7 @@ src/
       ChapterHud.jsx            → "01 / 03 IGNITION | 02 THE APPROACH | 03 CAMERA RISE" + linha de progresso
       ScrollIndicator.jsx       → "SCROLL TO EXPERIENCE" + linha animada; some ao rolar, volta no topo
     Marquee/                    → faixa com palavras gigantes (sólidas/contorno) que deslizam com o scroll
-    HeroExperience/HeroLight.jsx → luz fora do vídeo: feixes + continuação da borda + escurecimento inicial
+    HeroExperience/HeroLight.jsx → luz fora do vídeo (canvas): feixes + luz do chão pré-calculada + escurecimento inicial
     EngineSection/              → id="engine": conta-giros SVG fixo na tela (sticky, 300vh); scroll gira o ponteiro
                                   0→8.500 rpm; "720 Nm" acende em 6.750 e "770 CV" em 8.500; faixa vermelha acende
     Cursor/                     → cursor customizado (ponto + anel, mix-blend difference) só p/ mouse/trackpad

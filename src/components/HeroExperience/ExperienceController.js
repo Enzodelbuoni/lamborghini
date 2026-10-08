@@ -72,15 +72,27 @@ export class ExperienceController {
     return this.segments[index].ready
   }
 
-  setProgress(value) {
+  /**
+   * Where a scroll progress lands in the footage: which clip, and the exact
+   * (fractional) frame — e.g. 97.4. The video shows the rounded frame;
+   * effects that should glide between frames can use the fraction.
+   */
+  locate(value) {
     const p = clamp01(value)
-    this.progress = p
-
     const tp = this.transitionPoint
     const index = p < tp ? 0 : 1
     const local = index === 0 ? p / tp : (p - tp) / (1 - tp)
     const seg = this.segments[index]
-    const frame = Math.round(seg.startFrame + local * (seg.endFrame - seg.startFrame))
+    return { index, frame: seg.startFrame + local * (seg.endFrame - seg.startFrame) }
+  }
+
+  setProgress(value) {
+    const p = clamp01(value)
+    this.progress = p
+
+    const located = this.locate(p)
+    const index = located.index
+    const frame = Math.round(located.frame)
 
     if (index !== this.active) {
       this.active = index
