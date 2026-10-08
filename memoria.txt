@@ -3,11 +3,11 @@ MEMÓRIA DO PROJETO — LAMBORGHINI SVJ CINEMATIC SCROLL
 (Regra do info.txt: tudo de importante que for modificado deve ser registrado aqui.)
 
 ## STATUS ATUAL (2026-10-08)
-ETAPA 4 CONCLUÍDA — correções pedidas pelo usuário:
-  (a) números das especificações apareciam "0"/"0.0" → contador refeito à prova de falhas;
-  (b) fotos de "SHAPED BY THE AIR" estavam desestruturadas → refeitas em grade "bento" alinhada.
-(ETAPA 1: base. ETAPA 2: textos do hero + seção Design. ETAPA 3: hero em 3 colunas, galeria, Engine,
- Marquee, seção clara, grão, cursor.)
+ETAPA 5 (branch farois, EM AVALIAÇÃO) — feixes de luz dos faróis no hero: quando os faróis acendem com o
+scroll, dois cones de luz saem por trás do vídeo e descem em V até os cantos inferiores do hero.
+Se o usuário não gostar: git switch main (volta exatamente para a versão da etapa 4).
+(ETAPA 1: base. 2: textos do hero + Design. 3: hero 3 colunas, galeria, Engine, Marquee, seção clara,
+ grão, cursor. 4: contador à prova de falhas + grade bento no Design.)
 - Rodar:  npm install  →  npm run dev  →  http://localhost:5173
 - Build:  npm run build (gera dist/)
 - Próximos passos possíveis: ver "PENDÊNCIAS / IDEIAS" no fim do arquivo.
@@ -23,6 +23,29 @@ ETAPA 4 CONCLUÍDA — correções pedidas pelo usuário:
     descartar os faróis ................ git switch main   e depois   git branch -D farois
   O servidor (npm run dev) recarrega sozinho quando troca de branch.
 - Toda mudança importante daqui pra frente: commit com mensagem em português.
+
+## FEIXES DE LUZ DOS FARÓIS (etapa 5 — branch farois)
+- Pedido: quando o farol acende com o scroll, iluminar o resto do hero para baixo, em V, cada farol
+  chegando até o canto inferior esquerdo / direito.
+- Medição real: scripts/track-headlights.mjs decodifica o vídeo 1 (180x320, cinza) e acha, em cada metade
+  do carro, a mancha mais clara entre 30% e 72% da altura = farol. Gera src/content/headlights.js:
+  por frame (0–165) → [uEsq, vEsq, uDir, vDir, nível de luz]. (precisa de ffmpeg: FFMPEG=caminho node ...)
+  - frames 0–144: posição medida (média móvel de 5 frames). Depois de 144 o carro passa por cima da
+    câmera e os faróis saem do quadro → posição extrapolada.
+  - nível: ignição medida pelo tamanho da mancha (frames ~3→48), reforço de até 1.25 na aproximação
+    (frames 60–140), apaga entre os frames 144 e 156. Vídeo 2 (traseira): sempre apagado.
+- HeroBeams.jsx (dentro do VideoStage, ATRÁS do vídeo): 2 camadas de luz branco-fria rgb(222 230 245),
+  formadas por máscara cônica (perfil angular do feixe) × máscara radial (queda com a distância), +
+  textura grain-dark por cima (evita degradê "pixelado"/banding). O vídeo cobre a parte que já é
+  iluminada nas imagens; a luz aparece fora dele e pelas bordas esfumadas.
+  - borda interna do cone: reto para baixo (escondida atrás do vídeo); borda externa: passa além do
+    canto inferior → o canto fica dentro do feixe (~80% do ângulo).
+  - opacidade máxima = nível × 0.46 (CSS .video-stage__beams).
+- Sincronia: o ExperienceController agora chama onFrame(video, segmento, frame) com o frame que está
+  REALMENTE na tela (após o seek) → a luz acompanha o vídeo, não só o scroll.
+- Celular (vídeo cobre a tela toda): camada desligada (display: none). Tablet em pé: aparece nas laterais.
+- Testado: 3018x1102, 1920x1080, 1440x900, 1024x768 (split), 820x1180; acende/apaga nos pontos certos,
+  inclusive voltando o scroll; transição de vídeo intacta; console sem erros.
 
 ## ANÁLISE DOS VÍDEOS ORIGINAIS (pasta videos-lambo/, NÃO MODIFICAR)
 - Ambos: H.264, 720x1280 (VERTICAL 9:16), 24fps, 8s, 192 frames, com áudio.
@@ -102,6 +125,7 @@ src/
       ChapterHud.jsx            → "01 / 03 IGNITION | 02 THE APPROACH | 03 CAMERA RISE" + linha de progresso
       ScrollIndicator.jsx       → "SCROLL TO EXPERIENCE" + linha animada; some ao rolar, volta no topo
     Marquee/                    → faixa com palavras gigantes (sólidas/contorno) que deslizam com o scroll
+    HeroExperience/HeroBeams.jsx → feixes de luz dos faróis (etapa 5), ver seção própria acima
     EngineSection/              → id="engine": conta-giros SVG fixo na tela (sticky, 300vh); scroll gira o ponteiro
                                   0→8.500 rpm; "720 Nm" acende em 6.750 e "770 CV" em 8.500; faixa vermelha acende
     Cursor/                     → cursor customizado (ponto + anel, mix-blend difference) só p/ mouse/trackpad
