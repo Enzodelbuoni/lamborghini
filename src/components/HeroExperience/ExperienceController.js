@@ -15,6 +15,9 @@ const frameToTime = (frame) => (frame + 0.5) / FPS // middle of the frame → ex
  * near-black underbody frames), so the swap is instant and invisible.
  * Only one seek per video is in flight at a time; the latest requested frame
  * wins when the previous seek completes.
+ * `onFrame(video, segmentIndex, frame)` reports the frame that is actually on
+ * screen, after its seek has completed — anything synced to the footage
+ * (like the headlight beams) should follow it rather than the scroll.
  */
 export class ExperienceController {
   constructor({ segments, transitionPoint, onSegmentChange, onFrame }) {
@@ -115,7 +118,7 @@ export class ExperienceController {
     }
 
     this.updateVisibility()
-    if (index === this.visible) this.onFrame?.(seg.video)
+    if (index === this.visible) this.onFrame?.(seg.video, index, seg.shownFrame)
   }
 
   /**
@@ -132,7 +135,7 @@ export class ExperienceController {
     this.segments.forEach((s, i) => {
       if (s.video) s.video.dataset.visible = i === next ? 'true' : 'false'
     })
-    this.onFrame?.(this.segments[next].video)
+    this.onFrame?.(this.segments[next].video, next, this.segments[next].shownFrame)
   }
 
   destroy() {

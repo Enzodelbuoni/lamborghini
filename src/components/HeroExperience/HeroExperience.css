@@ -73,6 +73,96 @@
     linear-gradient(0deg, rgba(5, 5, 5, 0.55) 0%, rgba(5, 5, 5, 0) 20%);
 }
 
+/* ---------- headlight beams (behind the clip) ----------
+   Each cone = a flat cool-white light, shaped by two masks:
+   a conic gradient (the beam's angular profile, brightest just outside the
+   clip, still alive at the corner) × a radial falloff from the headlight.
+   The dark grain dithers the soft gradient so it never bands. */
+
+.video-stage__beams {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: calc(var(--level, 0) * 0.46);
+}
+
+.video-stage__beam {
+  position: absolute;
+  inset: 0;
+  background: url('/images/grain-dark.png') repeat, rgb(222 230 245);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+
+  --at: calc(var(--x, 0) * 1px) calc(var(--y, 0) * 1px);
+  --falloff: radial-gradient(
+    circle at var(--at),
+    #000 0,
+    rgba(0, 0, 0, 0.75) calc(var(--reach, 1) * 0.45px),
+    rgba(0, 0, 0, 0.42) calc(var(--reach, 1) * 1px),
+    rgba(0, 0, 0, 0) calc(var(--reach, 1) * 1.35px)
+  );
+}
+
+/* inner edge first (straight down), fading out past the bottom-left corner */
+.video-stage__beam--left {
+  -webkit-mask-image:
+    conic-gradient(
+      from calc(var(--from, 0) * 1deg) at var(--at),
+      rgba(0, 0, 0, 0) 0deg,
+      #000 calc(var(--span, 0) * 0.25deg),
+      rgba(0, 0, 0, 0.7) calc(var(--span, 0) * 0.6deg),
+      rgba(0, 0, 0, 0.35) calc(var(--span, 0) * 0.88deg),
+      rgba(0, 0, 0, 0) calc(var(--span, 0) * 1deg),
+      rgba(0, 0, 0, 0) 360deg
+    ),
+    var(--falloff);
+  mask-image:
+    conic-gradient(
+      from calc(var(--from, 0) * 1deg) at var(--at),
+      rgba(0, 0, 0, 0) 0deg,
+      #000 calc(var(--span, 0) * 0.25deg),
+      rgba(0, 0, 0, 0.7) calc(var(--span, 0) * 0.6deg),
+      rgba(0, 0, 0, 0.35) calc(var(--span, 0) * 0.88deg),
+      rgba(0, 0, 0, 0) calc(var(--span, 0) * 1deg),
+      rgba(0, 0, 0, 0) 360deg
+    ),
+    var(--falloff);
+}
+
+/* mirrored: outer edge first (past the bottom-right corner), inner edge last */
+.video-stage__beam--right {
+  -webkit-mask-image:
+    conic-gradient(
+      from calc(var(--from, 0) * 1deg) at var(--at),
+      rgba(0, 0, 0, 0) 0deg,
+      rgba(0, 0, 0, 0.35) calc(var(--span, 0) * 0.12deg),
+      rgba(0, 0, 0, 0.7) calc(var(--span, 0) * 0.4deg),
+      #000 calc(var(--span, 0) * 0.75deg),
+      rgba(0, 0, 0, 0) calc(var(--span, 0) * 1deg),
+      rgba(0, 0, 0, 0) 360deg
+    ),
+    var(--falloff);
+  mask-image:
+    conic-gradient(
+      from calc(var(--from, 0) * 1deg) at var(--at),
+      rgba(0, 0, 0, 0) 0deg,
+      rgba(0, 0, 0, 0.35) calc(var(--span, 0) * 0.12deg),
+      rgba(0, 0, 0, 0.7) calc(var(--span, 0) * 0.4deg),
+      #000 calc(var(--span, 0) * 0.75deg),
+      rgba(0, 0, 0, 0) calc(var(--span, 0) * 1deg),
+      rgba(0, 0, 0, 0) 360deg
+    ),
+    var(--falloff);
+}
+
+/* phones: the clip covers the whole stage, nothing would show */
+@media (max-aspect-ratio: 9/16) {
+  .video-stage__beams {
+    display: none;
+  }
+}
+
 /* legibility shade for the copy in overlay mode */
 .hero__shade {
   position: absolute;
