@@ -1,0 +1,53 @@
+/* each part is its own fixed layer so the blend only touches its own pixels */
+.cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 300;
+  pointer-events: none;
+  mix-blend-mode: difference;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.cursor__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.cursor__ring {
+  width: 40px;
+  height: 40px;
+}
+
+.cursor__ring-shape {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 50%;
+  transition:
+    transform 0.45s var(--ease-out),
+    background-color 0.45s var(--ease-out);
+}
+
+.cursor__ring.is-active .cursor__ring-shape {
+  transform: scale(1.7);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.cursor__ring.is-pressed .cursor__ring-shape {
+  transform: scale(0.8);
+}
+
+html.has-cursor,
+html.has-cursor * {
+  cursor: none;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .cursor {
+    display: none;
+  }
+}

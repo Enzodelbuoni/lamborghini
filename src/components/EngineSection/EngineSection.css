@@ -1,0 +1,282 @@
+.engine {
+  position: relative;
+  z-index: 2;
+  height: 300vh;
+  background: url('/images/grain-light.png') repeat, var(--c-bg);
+
+  --c-red: #e2231a;
+}
+
+.engine__stage {
+  position: sticky;
+  top: 0;
+  height: var(--stage-h);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.engine__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(2rem, 4vw, 5rem);
+}
+
+/* ---------- intro ---------- */
+
+.engine__kicker {
+  margin-bottom: 1.25rem;
+}
+
+.engine__title {
+  font-size: clamp(2.25rem, 4.4vw, 4.75rem);
+  font-weight: 200;
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+  text-transform: uppercase;
+}
+
+.engine__title .mask {
+  padding-bottom: 0.08em;
+}
+
+.engine__title-strong {
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+
+.engine__body {
+  max-width: 30ch;
+  margin-top: 1.5rem;
+  color: var(--c-text-2);
+}
+
+/* ---------- dial ---------- */
+
+.engine__gauge {
+  position: relative;
+  width: min(64vh, 36vw, 600px);
+  aspect-ratio: 1;
+}
+
+.engine__dial {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.engine__track {
+  fill: none;
+  stroke: var(--c-line-strong);
+  stroke-width: 1;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+.engine__progress {
+  fill: none;
+  stroke: var(--c-accent);
+  stroke-width: 2.5;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.engine__redline {
+  fill: none;
+  stroke: var(--c-red);
+  stroke-width: 7;
+  opacity: 0.35;
+  transition:
+    opacity 0.5s var(--ease-out),
+    filter 0.5s var(--ease-out);
+}
+
+.engine__tick {
+  stroke: var(--c-text-2);
+  stroke-width: 1;
+}
+
+.engine__tick--major {
+  stroke: var(--c-text);
+  stroke-width: 1.5;
+}
+
+.engine__num {
+  font-family: var(--f-cond);
+  font-size: 30px;
+  font-weight: 300;
+  fill: var(--c-text-2);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.engine__num--red {
+  fill: var(--c-red);
+}
+
+.engine__needle line {
+  stroke: var(--c-text);
+  stroke-width: 2;
+  stroke-linecap: round;
+  transition: stroke 0.4s;
+}
+
+.engine__hub {
+  fill: var(--c-bg);
+  stroke: var(--c-text);
+  stroke-width: 1.5;
+}
+
+.engine__readout {
+  position: absolute;
+  left: 50%;
+  top: 72%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.engine__rpm {
+  font-size: clamp(2.5rem, 5.5vh, 4.25rem);
+  font-weight: 200;
+  min-width: 4.2ch;
+  text-align: center;
+  transition: color 0.4s;
+}
+
+/* at peak power the dial ignites */
+.engine.is-redline .engine__redline {
+  opacity: 1;
+  filter: drop-shadow(0 0 6px rgba(226, 35, 26, 0.65));
+}
+
+.engine.is-redline .engine__needle line {
+  stroke: var(--c-red);
+}
+
+.engine.is-redline .engine__rpm {
+  color: var(--c-accent);
+}
+
+/* ---------- milestones ---------- */
+
+.engine__milestones {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2rem, 6vh, 3.5rem);
+  justify-self: end;
+  width: min(100%, 280px);
+}
+
+.engine__milestone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-top: 1.25rem;
+  opacity: 0.28;
+  transition: opacity 0.6s var(--ease-out);
+}
+
+.engine__milestone.is-on {
+  opacity: 1;
+}
+
+.engine__milestone-rule {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--c-line-strong);
+  overflow: hidden;
+}
+
+.engine__milestone-rule::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--c-accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.9s var(--ease-out);
+}
+
+.engine__milestone.is-on .engine__milestone-rule::after {
+  transform: scaleX(1);
+}
+
+.engine__milestone-value {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.engine__milestone-value .numeral {
+  font-size: clamp(3rem, 5vw, 4.75rem);
+  font-weight: 200;
+}
+
+.engine__milestone-unit {
+  font-family: var(--f-cond);
+  font-size: 1.25rem;
+  color: var(--c-text-2);
+}
+
+.engine__milestone-at {
+  font-size: var(--fs-small);
+  color: var(--c-text-2);
+}
+
+/* ---------- small screens: stacked inside the pinned viewport ---------- */
+
+@media (max-width: 899px) {
+  .engine {
+    height: 260vh;
+  }
+
+  .engine__grid {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: clamp(1rem, 3vh, 2rem);
+    text-align: center;
+  }
+
+  .engine__intro {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .engine__title {
+    font-size: clamp(2rem, 8vw, 3rem);
+  }
+
+  .engine__body {
+    display: none;
+  }
+
+  .engine__gauge {
+    width: min(84vw, 44vh, 460px);
+  }
+
+  .engine__milestones {
+    flex-direction: row;
+    justify-self: stretch;
+    width: 100%;
+    gap: 1.5rem;
+    text-align: left;
+  }
+
+  .engine__milestone {
+    flex: 1;
+  }
+
+  .engine__milestone-value .numeral {
+    font-size: clamp(2.25rem, 10vw, 3rem);
+  }
+}

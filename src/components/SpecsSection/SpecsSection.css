@@ -1,0 +1,103 @@
+.specs {
+  position: relative;
+  z-index: 2;
+  background: url('/images/grain-light.png') repeat, var(--c-bg-2);
+  padding: clamp(6rem, 18vh, 12rem) 0 clamp(6rem, 16vh, 11rem);
+}
+
+.specs__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: clamp(3.5rem, 10vh, 7rem);
+}
+
+.specs__title {
+  font-size: clamp(2rem, 4.2vw, 3.75rem);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.specs__list {
+  list-style: none;
+}
+
+.spec {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  align-items: end;
+  gap: clamp(1.5rem, 5vw, 6rem);
+  padding: clamp(2.5rem, 7vh, 4.5rem) 0;
+}
+
+.spec:last-child {
+  border-bottom: 1px solid var(--c-line);
+}
+
+.spec__rule {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: var(--c-line);
+}
+
+.spec__value {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(0.5rem, 1vw, 1rem);
+}
+
+.spec__number {
+  font-size: clamp(5.5rem, 15vw, 14rem);
+  font-weight: 200;
+  line-height: 0.8;
+  transition: color 0.6s var(--ease-out);
+}
+
+.spec__unit {
+  font-family: var(--f-cond);
+  font-size: clamp(1.25rem, 2vw, 1.75rem);
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  color: var(--c-text-2);
+}
+
+.spec__meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 1.5rem;
+  row-gap: 0.85rem;
+  padding-bottom: 0.4rem;
+}
+
+.spec__index {
+  grid-row: span 2;
+}
+
+.spec__title {
+  color: var(--c-text);
+}
+
+.spec__text {
+  max-width: 34ch;
+  color: var(--c-text-2);
+}
+
+@media (hover: hover) {
+  .spec:hover .spec__number {
+    color: #ffffff;
+  }
+}
+
+@media (max-width: 767px) {
+  .spec {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 1.5rem;
+  }
+}

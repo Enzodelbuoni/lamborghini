@@ -1,0 +1,117 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background: var(--c-bg);
+  color: var(--c-text);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+html.is-loading,
+html.is-loading body {
+  overflow: hidden;
+}
+
+body {
+  background: var(--c-bg);
+  font-family: var(--f-sans);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+img,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: var(--c-accent);
+  color: var(--c-bg);
+}
+
+:focus-visible {
+  outline: 1px solid var(--c-accent);
+  outline-offset: 4px;
+}
+
+/* ---------- shared typographic atoms ---------- */
+
+.label {
+  font-size: var(--fs-label);
+  font-weight: 500;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.label--muted {
+  color: var(--c-text-2);
+}
+
+.label--accent {
+  color: var(--c-accent);
+}
+
+.numeral {
+  font-family: var(--f-cond);
+  font-weight: 300;
+  line-height: 0.85;
+  letter-spacing: -0.01em;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* text that slides up from behind a mask */
+.mask {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.06em;
+  margin-bottom: -0.06em;
+}
+
+.mask > * {
+  display: block;
+}
+
+.section-shell {
+  position: relative;
+  width: 100%;
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

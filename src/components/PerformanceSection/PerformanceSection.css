@@ -1,0 +1,60 @@
+.performance {
+  position: relative;
+  z-index: 2;
+  background: url('/images/grain-light.png') repeat, var(--c-bg);
+  padding: clamp(5rem, 14vh, 10rem) 0 clamp(6rem, 18vh, 12rem);
+}
+
+.performance__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  gap: clamp(2.5rem, 6vw, 7rem);
+  align-items: center;
+}
+
+.performance__kicker {
+  margin-bottom: clamp(2.5rem, 7vh, 4.5rem);
+}
+
+.performance__statements {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.75rem, 5vh, 3.25rem);
+}
+
+.performance__statement {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  align-items: start;
+}
+
+.performance__index {
+  font-size: 0.9375rem;
+  color: var(--c-accent);
+  padding-top: 0.55em;
+}
+
+.performance__text {
+  font-size: clamp(2rem, 4.6vw, 4.5rem);
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+  color: var(--c-text);
+}
+
+@media (max-width: 899px) {
+  .performance__grid {
+    grid-template-columns: 1fr;
+  }
+  .performance__media {
+    max-width: 440px;
+  }
+}
+
+@media (max-width: 767px) {
+  .performance__statement {
+    grid-template-columns: 2rem minmax(0, 1fr);
+  }
+}

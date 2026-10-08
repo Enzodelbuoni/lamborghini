@@ -1,0 +1,91 @@
+.footer {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  background: url('/images/grain-light.png') repeat, var(--c-bg);
+}
+
+/* the taillights close the story the headlights opened */
+.footer__backdrop {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.footer__backdrop img {
+  height: 100%;
+  width: auto;
+  max-width: none;
+  object-fit: cover;
+  opacity: 0.55;
+  -webkit-mask-image: radial-gradient(ellipse 60% 55% at 50% 42%, #000 35%, transparent 100%);
+  mask-image: radial-gradient(ellipse 60% 55% at 50% 42%, #000 35%, transparent 100%);
+}
+
+.footer__inner {
+  padding-bottom: calc(var(--gutter) + env(safe-area-inset-bottom, 0px));
+}
+
+.footer__mark {
+  font-family: var(--f-cond);
+  font-weight: 600;
+  font-size: clamp(7rem, 30vw, 28rem);
+  line-height: 0.78;
+  letter-spacing: -0.02em;
+  color: var(--c-text);
+  margin-bottom: clamp(1.5rem, 4vh, 3rem);
+  margin-left: -0.04em;
+}
+
+.footer__mark .mask {
+  padding-bottom: 0.04em;
+}
+
+.footer__bar {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem 2rem;
+  padding-top: 1.5rem;
+}
+
+.footer__rule {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--c-line);
+}
+
+.footer__top {
+  justify-self: end;
+  transition: color 0.4s;
+}
+
+.footer__top:hover {
+  color: var(--c-accent);
+}
+
+.footer__note {
+  grid-column: 1 / -1;
+  opacity: 0.6;
+  letter-spacing: 0.2em;
+}
+
+@media (max-width: 767px) {
+  .footer {
+    min-height: 85vh;
+  }
+  .footer__bar {
+    grid-template-columns: 1fr;
+  }
+  .footer__top {
+    justify-self: start;
+  }
+}

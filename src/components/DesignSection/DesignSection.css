@@ -1,0 +1,178 @@
+.design {
+  position: relative;
+  z-index: 2;
+  background: var(--c-bg);
+}
+
+/* paper theme — every component inside re-reads these tokens */
+.design__panel {
+  --c-text: #0d0d0d;
+  --c-text-2: #5c5a56;
+  --c-line: rgba(13, 13, 13, 0.14);
+  --c-line-strong: rgba(13, 13, 13, 0.3);
+  --c-accent: #a8862a;
+  --c-surface: #dad7d1;
+
+  position: relative;
+  color: var(--c-text);
+  background: url('/images/grain-dark.png') repeat, #eceae5;
+  padding: clamp(6rem, 16vh, 11rem) 0 clamp(6rem, 16vh, 11rem);
+}
+
+/* ---------- heading row ---------- */
+
+.design__top {
+  display: grid;
+  gap: 1.75rem;
+}
+
+.design__kicker {
+  margin-bottom: 1.25rem;
+}
+
+.design__title {
+  font-size: clamp(2.75rem, 7vw, 7.5rem);
+  font-weight: 200;
+  line-height: 0.9;
+  letter-spacing: -0.045em;
+  text-transform: uppercase;
+}
+
+.design__title .mask {
+  padding-bottom: 0.08em;
+}
+
+.design__title-strong {
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+
+.design__intro {
+  max-width: 38ch;
+  color: var(--c-text-2);
+}
+
+/* ---------- bento: phones (two columns) ---------- */
+
+.design__bento {
+  --tile-gap: clamp(0.625rem, 1.1vw, 1rem);
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--tile-gap);
+  margin-top: clamp(3rem, 8vh, 5.5rem);
+}
+
+/* explicit placement: wide photo on top, the two portraits side by side, note last */
+.design__rear {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  aspect-ratio: 4 / 3;
+}
+
+.design__front {
+  grid-column: 1;
+  grid-row: 2;
+  aspect-ratio: 3 / 4;
+}
+
+.design__wing {
+  grid-column: 2;
+  grid-row: 2;
+  aspect-ratio: 3 / 4;
+}
+
+/* small tiles keep only index + title */
+.design__front .ed-image__text,
+.design__wing .ed-image__text {
+  display: none;
+}
+
+/* the statement is a tile of its own: dark ink on the paper page */
+.design__note {
+  --c-text: #f2f2f2;
+  --c-text-2: #8a8a8a;
+  --c-accent: #d4af37;
+
+  grid-column: 1 / -1;
+  grid-row: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2.5rem;
+  padding: clamp(1.25rem, 2.2vw, 2rem);
+  background: url('/images/grain-light.png') repeat, #0d0d0d;
+  color: var(--c-text);
+}
+
+.design__note-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.design__note-index {
+  font-size: 1.125rem;
+  color: var(--c-text-2);
+}
+
+.design__note-text {
+  font-size: clamp(1.375rem, 2vw, 2.125rem);
+  font-weight: 300;
+  line-height: 1.14;
+  letter-spacing: -0.025em;
+}
+
+/* ---------- bento: tablets & desktop — one aligned block ----------
+   ┌──────────┬────────────────────────┐
+   │          │          rear          │
+   │  front   ├───────────┬────────────┤
+   │          │   wing    │    note    │
+   └──────────┴───────────┴────────────┘ */
+
+@media (min-width: 900px) {
+  .design__top {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    align-items: end;
+    gap: clamp(2rem, 5vw, 6rem);
+  }
+
+  .design__intro {
+    justify-self: end;
+    padding-bottom: 0.5rem;
+  }
+
+  .design__bento {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    aspect-ratio: 16 / 9;
+  }
+
+  .design__front {
+    grid-column: 1 / 6;
+    grid-row: 1 / 3;
+    aspect-ratio: auto;
+  }
+
+  .design__rear {
+    grid-column: 6 / 13;
+    grid-row: 1;
+    aspect-ratio: auto;
+  }
+
+  .design__wing {
+    grid-column: 6 / 9;
+    grid-row: 2;
+    aspect-ratio: auto;
+  }
+
+  .design__note {
+    grid-column: 9 / 13;
+    grid-row: 2;
+  }
+
+  .design__front .ed-image__text,
+  .design__wing .ed-image__text {
+    display: block;
+  }
+}

@@ -1,0 +1,43 @@
+:root {
+  /* palette */
+  --c-bg: #050505;
+  --c-bg-2: #0a0a0a;
+  --c-surface: #111111;
+  --c-text: #f2f2f2;
+  --c-text-2: #8a8a8a;
+  --c-accent: #d4af37;
+  --c-line: rgba(242, 242, 242, 0.12);
+  --c-line-strong: rgba(242, 242, 242, 0.28);
+
+  /* type */
+  --f-sans: 'Manrope Variable', 'Manrope', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-cond: 'Barlow Condensed', 'Arial Narrow', 'Roboto Condensed', sans-serif;
+
+  --fs-label: 0.6875rem; /* 11px */
+  --fs-small: 0.8125rem; /* 13px */
+  --fs-body: clamp(0.9375rem, 0.88rem + 0.2vw, 1.0625rem);
+  --ls-label: 0.32em;
+  --ls-wide: 0.18em;
+
+  /* layout */
+  --gutter: clamp(1.25rem, 3.2vw, 3rem);
+  --max-w: 1440px;
+  --stage-h: 100vh;
+  --hero-scroll: 650vh; /* scroll distance that drives both videos */
+
+  /* motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+@supports (height: 100svh) {
+  :root {
+    --stage-h: 100svh;
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --hero-scroll: 520vh;
+  }
+}

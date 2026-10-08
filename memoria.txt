@@ -1,0 +1,171 @@
+MEMÓRIA DO PROJETO — LAMBORGHINI SVJ CINEMATIC SCROLL
+======================================================
+(Regra do info.txt: tudo de importante que for modificado deve ser registrado aqui.)
+
+## STATUS ATUAL (2026-10-08)
+ETAPA 4 CONCLUÍDA — correções pedidas pelo usuário:
+  (a) números das especificações apareciam "0"/"0.0" → contador refeito à prova de falhas;
+  (b) fotos de "SHAPED BY THE AIR" estavam desestruturadas → refeitas em grade "bento" alinhada.
+(ETAPA 1: base. ETAPA 2: textos do hero + seção Design. ETAPA 3: hero em 3 colunas, galeria, Engine,
+ Marquee, seção clara, grão, cursor.)
+- Rodar:  npm install  →  npm run dev  →  http://localhost:5173
+- Build:  npm run build (gera dist/)
+- Próximos passos possíveis: ver "PENDÊNCIAS / IDEIAS" no fim do arquivo.
+
+## ANÁLISE DOS VÍDEOS ORIGINAIS (pasta videos-lambo/, NÃO MODIFICAR)
+- Ambos: H.264, 720x1280 (VERTICAL 9:16), 24fps, 8s, 192 frames, com áudio.
+- VÍDEO 1 (aproximação) = "Lamborghini_accelerates_toward_c…_20261008141443.mp4"
+  - frames 0–48: faróis acendem | 48–150: carro avança/acelera | 150–164: capô preenche o frame
+  - 165: quase preto (câmera sob o carro) | 166–181: assoalho/rodas | 182–191: garagem vazia (NÃO usar)
+- VÍDEO 2 (câmera sobe) = "Lamborghini_accelerating_toward_%E2%80%A6_20261008134239_20261008141447.mp4"
+  - frames 0–32: o próprio vídeo 2 tem uma aproximação frontal (NÃO usar)
+  - 33: quase preto (sob o carro) | 34–36: assoalho | 37+: visão traseira → câmera sobe → visão de cima → carro se afasta
+- PONTO DE CORTE ESCOLHIDO: vídeo 1 frame 165 → vídeo 2 frame 33.
+  Ambos quase pretos (brilho médio YAVG = 19 nos dois) → troca invisível, escondida pelo corpo do carro.
+  Sem fade, sem crossfade, sem tela branca: troca seca entre dois frames pretos.
+- Trechos usados: V1 frames 0..165 (166 frames) + V2 frames 33..191 (159 frames) = 325 frames.
+- OBS: o carro dos vídeos parece um Huracán (traseira estilo Performante), não um Aventador. Textos seguem o info.txt (Aventador SVJ).
+
+## MÍDIA PREPARADA (public/)
+- public/videos/svj-approach.mp4  = vídeo 1 re-encodado
+- public/videos/svj-overhead.mp4  = vídeo 2 re-encodado
+  Re-encode SÓ para scrubbing (conteúdo/visual idênticos, sem corte, sem filtro):
+  ffmpeg -i IN.mp4 -an -c:v libx264 -preset slow -crf 20 -g 1 -keyint_min 1 -sc_threshold 0 -bf 0 -pix_fmt yuv420p -movflags +faststart OUT.mp4
+  (-g 1 = todo frame é keyframe → seek instantâneo para frente e para trás; sem áudio; faststart)
+  Tamanhos: approach 4.3MB, overhead 3.7MB.
+- public/images/svj-poster.webp   = frame 0 do vídeo 1 (poster)
+- public/images/svj-overhead.webp = frame 120 do vídeo 2 (imagem da seção Performance)
+- public/images/svj-rear.webp     = frame 45 do vídeo 2 (fundo do Footer — lanternas fecham a história)
+- public/favicon.svg
+- FOTOS DO USUÁRIO (originais em videos-lambo/, NÃO MODIFICAR) → recortadas/convertidas p/ webp:
+  - lamboimg1.jpg → public/images/svj-detail-rear.webp  (crop 1134x960 y=180: difusor/escapes; tira a placa da concessionária)
+  - lamboimg2.jpg → public/images/svj-detail-wing.webp  (crop 453x633 x=180: asa/entrada lateral; tira a placa do carro)
+  - lamboimg3.png → public/images/svj-detail-front.webp (crop 650x1220 y=370: só o carro; tira o texto "LAMBORGHINI /
+    UNLEASH THE BEAST" e o logo que vinham embutidos no pôster)
+  - lamboimg2 é pequena (633px) → usada em tamanho menor no layout.
+- FOTOS NOVAS (etapa 3) → galeria do hero (public/images/, todas 3:4):
+  - lamboimg4.jpg → hero-emblem.webp    (emblema com gotas, P&B)
+  - lamboimg6.jpg → hero-gauge.webp     (velocímetro; crop 736x981 y=60 + ffmpeg colorhold → P&B mantendo SÓ o
+    ponteiro vermelho, para casar com a paleta. OBS: imagem parece gerada por IA, números fora de sequência)
+  - lamboimg5.jpg → hero-taillight.webp (spoiler + lanterna vermelha; crop 1200x1600 y=120 → 900x1200.
+    OBS: parece ser de outro carro, lembra um Toyota Supra)
+- Texturas de grão: public/images/grain-light.png (pontos claros p/ fundos escuros) e grain-dark.png (pontos
+  escuros p/ a seção clara). Geradas com script Node (ruído aleatório real; o random do ffmpeg fazia padrão).
+- ffmpeg não está instalado no sistema; usei ffmpeg-static (npm) numa pasta temporária.
+
+## STACK
+React 19 + Vite 8 (JavaScript, sem TypeScript) | gsap 3.15 + ScrollTrigger + ScrollToPlugin + @gsap/react (useGSAP)
+Fontes self-hosted: @fontsource-variable/manrope (texto/labels) + @fontsource/barlow-condensed (números).
+Sem biblioteca de componentes.
+
+## ESTRUTURA
+src/
+  main.jsx                      → fontes + estilos + <App/> (StrictMode)
+  App.jsx                       → carregamento dos vídeos, fases: 'loading' → 'leaving' → 'entered'
+  config/experience.js          → FRAMES DE CORTE, TRANSITION_POINT, CAPÍTULOS, SCRUB_SMOOTHING, AMBIENT_LIGHT  ← AJUSTES FINOS AQUI
+  lib/gsap.js                   → registro dos plugins (ignoreMobileResize)
+  lib/loadVideo.js              → fetch com progresso → blob URL; whenVideoReady; primeVideo (play/pause p/ iOS)
+  lib/reveal.js                 → animações reutilizáveis: riseIn, drawLines, fadeUp, countUp.
+                                  countUp (números contam até o valor de data-count) — REGRAS anti-"0":
+                                    • valor final vem SEMPRE do atributo data-count, nunca do texto;
+                                    • ao criar, já escreve o valor final;
+                                    • valor parcial só aparece se a animação estiver REALMENTE rodando
+                                      (this.isActive()); fora disso (revert/kill do StrictMode, hot reload,
+                                      desmontagem) → onInterrupt/onComplete/onReverseComplete voltam ao final;
+                                    • atualiza o nó de texto do React no lugar (nodeValue), sem trocar o nó.
+  content/heroCopy.js           → TEXTOS DO HERO ("beats") + em que progresso entram/saem  ← EDITAR TEXTOS AQUI
+  styles/tokens.css             → paleta, fontes, --hero-scroll (650vh desktop / 520vh mobile), --stage-h (100svh)
+  styles/global.css             → reset + átomos (.label, .numeral, .mask, .section-shell)
+  components/
+    Header/                     → SVJ + MENU fixos; blur sutil só sobre conteúdo editorial; menu overlay (Esc fecha)
+    LoadingScreen/              → SVJ, LOADING EXPERIENCE, barra 1px dourada; mínimo 1.4s; fade out
+    HeroExperience/
+      HeroExperience.jsx        → seção sticky; ScrollTrigger (scrub) → controller.setProgress(p); HUD; intro
+      ExperienceController.js   → LÓGICA CENTRAL: progresso global → qual vídeo + qual frame (currentTime)
+      VideoStage.jsx            → 2 <video> empilhados + vinheta (canvas de luz ambiente REMOVIDO na etapa 2)
+      HeroCopy.jsx              → textos à esquerda; timeline GSAP pausada cujo progress = mesmo progresso do vídeo
+      HeroGallery.jsx           → galeria à direita (só telas largas): 3 fotos que trocam com cortina de baixo
+                                  p/ cima, zoom lento, contador estilo odômetro 01→02→03, barras de progresso;
+                                  também é uma timeline pausada controlada pelo MESMO progresso do vídeo
+      ChapterHud.jsx            → "01 / 03 IGNITION | 02 THE APPROACH | 03 CAMERA RISE" + linha de progresso
+      ScrollIndicator.jsx       → "SCROLL TO EXPERIENCE" + linha animada; some ao rolar, volta no topo
+    Marquee/                    → faixa com palavras gigantes (sólidas/contorno) que deslizam com o scroll
+    EngineSection/              → id="engine": conta-giros SVG fixo na tela (sticky, 300vh); scroll gira o ponteiro
+                                  0→8.500 rpm; "720 Nm" acende em 6.750 e "770 CV" em 8.500; faixa vermelha acende
+    Cursor/                     → cursor customizado (ponto + anel, mix-blend difference) só p/ mouse/trackpad
+    EditorialImage/             → componente reutilizável de foto: revelação por cortina, scale, parallax, legenda.
+                                  Props (etapa 4): fill (preenche a célula da grade), overlay (legenda dentro da
+                                  foto), delay (escalonar revelações)
+    DesignSection/              → id="design": capítulo CLARO (papel #ECEAE5 + grão escuro). O painel abre de
+                                  "cartão" para tela cheia ao entrar e fecha ao sair (clip-path com scrub).
+                                  ETAPA 4 — GRADE "BENTO" ALINHADA (todas as bordas batem):
+                                    desktop (≥900px): bloco 16:9, 12 colunas × 2 linhas
+                                      front (cols 1-5, 2 linhas) | rear (cols 6-12, linha 1)
+                                                                 | wing (cols 6-8) + nota "ALA 2.0" (cols 9-12)
+                                    celular: rear largura total → front + wing lado a lado → nota
+                                  Legendas DENTRO das fotos (sombra suave embaixo). A nota é um bloco escuro.
+                                  Header fica claro (header--light) enquanto passa por cima dessa seção.
+    TransitionSection/          → id="svj": sobrepõe a última tela do hero (margin-top -100svh) com gradiente
+                                  transparente→preto; "AVENTADOR SVJ" + 6.5L / 770 CV / 2.8s / 351 km/h
+    SpecsSection/               → id="specs": número grande à esquerda, descrição à direita, linhas que se desenham
+    PerformanceSection/         → id="performance": 4 frases que "acendem" no centro da tela + still (agora via EditorialImage)
+    Footer/                     → SVJ gigante + lanternas ao fundo + "Replay the approach" + aviso de projeto conceito
+
+## COMO FUNCIONA O SCRUBBING
+- Hero = altura (--hero-scroll + 100svh); palco interno position: sticky.
+- ScrollTrigger (start 'top top', end 'bottom bottom', scrub 0.45) anima um proxy 0→1.
+- ExperienceController.setProgress(p):
+    p < TRANSITION_POINT (≈0.511) → vídeo 1, frame = 0..165
+    p ≥ TRANSITION_POINT          → vídeo 2, frame = 33..191
+  currentTime = (frame + 0.5) / 24  (meio do frame = frame exato em todo navegador)
+- Nunca usa play() para animar. Vídeos sempre pausados. Um seek por vez por vídeo (o último pedido vence).
+- O vídeo inativo fica "estacionado" no frame do corte (V1→165, V2→33) → troca instantânea.
+- Se o vídeo 2 ainda não carregou, o vídeo 1 segura o frame 165 (preto) até ele ficar pronto.
+- Carregamento: vídeo 1 baixa inteiro (blob) com progresso na barra; vídeo 2 baixa logo depois em segundo plano.
+
+## LAYOUT DO HERO (etapa 3 — atual)
+- Pedido do usuário: vídeo de volta ao MEIO; lado direito com as 3 fotos novas; texto um pouco mais à direita.
+- TRIO (largura ≥ 1100px e proporção ≥ 4/3): texto | vídeo centralizado | galeria.
+  Cada coluna lateral é centralizada no espaço entre a borda da tela e o vídeo, com recuo mínimo de
+  1,9× a margem (--side-inset) → texto começa em ~91px (1920) / ~261px (ultrawide 3018).
+  Tamanho do título calculado pela largura da coluna (largura/7) → nunca invade o vídeo.
+- SPLIT (900–1099px ou proporção 5/4–4/3): vídeo à direita, texto à esquerda, sem galeria.
+- OVERLAY (celular/tablet em pé): vídeo em tela cheia, texto embaixo, sem galeria.
+- Galeria sincronizada com a história: emblema (0–0.31) → velocímetro (0.31–0.53, junto do "2.8s")
+  → lanterna (0.53–0.86, quando o vídeo mostra a traseira). Sai junto com o último texto (0.86).
+
+## LAYOUT DO HERO (etapa 2 — substituído pela etapa 3)
+- Feedback do usuário: hero estava "fino" (só o vídeo no meio) e o degradê (halo de luz ambiente) estava pixelado.
+  → halo REMOVIDO; laterais agora são preto puro.
+- SPLIT (landscape: min-aspect-ratio 5/4 e largura ≥ 900px): vídeo à DIREITA (right: clamp(1.5rem, 7vw, 8rem)),
+  altura 100%, bordas dissolvidas (mask); TEXTO à ESQUERDA (coluna até 860px); HUD na coluna do texto;
+  "Scroll to experience" centralizado embaixo do vídeo.
+- OVERLAY (celular / tablet em pé): vídeo cobre a tela; texto embaixo sobre um sombreado (hero__shade).
+- Textos do hero (src/content/heroCopy.js), sincronizados com o vídeo:
+    0.00–0.07 "BORN IN THE DARK." (aparece após o loading) | 0.14–0.31 "770 HORSES. ZERO TURBOS."
+    0.34–0.50 "2.8s — IT DOESN'T ARRIVE. IT STRIKES." (sai antes do carro passar pela câmera)
+    0.56–0.74 "BUILT FOR THE RING." (6:44.97 Nordschleife 2018) | 0.76–0.90 "THEN, IT'S GONE."
+  Entram com linhas subindo da máscara, saem subindo com fade. Reversível (scroll para cima).
+- Sem zoom, sem filtro, sem deformação no vídeo. Transição entre vídeos INALTERADA (V1 f165 → V2 f33).
+
+## ORDEM DAS SEÇÕES (etapa 3)
+Hero → Aventador SVJ (números contam) → Marquee → Specifications (números contam, fundo #0A0A0A + grão)
+→ Engine (conta-giros) → Design (CLARO) → Performance → Footer. Menu: 6 itens (inclui Engine).
+
+## TESTES FEITOS
+- Chrome headless (puppeteer-core + Chrome instalado) em 1440x900, 820x1180 (tablet), 390x844 (mobile).
+- Mapeamento de frames verificado: p=0.508 → V1 f164 | p=0.512 → V2 f33 (troca exata no corte).
+- Menu, navegação por âncora, loading com rede lenta: OK. Console sem erros.
+- Etapa 3: testado em 3018x1102, 1920x1080, 1440x900, 1366x768, 1180x820, 1024x768, 820x1180, 390x844, 360x640.
+  Sem scroll horizontal em nenhum tamanho; transição de vídeo inalterada (V1 f163 → V2 f34); console sem erros.
+- Bug corrigido: conta-giros parava em 8.499,99 e "770 CV" não acendia → comparação usa o valor exibido.
+- Etapa 4: contador testado com rolagem por roda do mouse, subir/descer de novo e hot reload com a página
+  aberta → sempre termina em 770 / 6.5 / 2.8 / 351. Grade do Design medida: bordas alinhadas ao pixel.
+- OBS: a aba do Chrome via extensão estava com a janela minimizada (visibilityState hidden) → Chrome não carrega
+  vídeo em aba oculta. Não é bug do site; quando a aba fica visível o carregamento começa.
+
+## PENDÊNCIAS / IDEIAS
+- Vídeos verticais limitam o desktop (coluna central). Versões 16:9 dos vídeos melhorariam muito o desktop.
+- Cursor customizado (opcional no info.txt) não foi implementado.
+- Na foto do difusor (svj-detail-rear) o escape fica perto da borda inferior — dá para ajustar o crop se quiser.
+- Ajustar sensação: SCRUB_SMOOTHING (config) e --hero-scroll (tokens.css).

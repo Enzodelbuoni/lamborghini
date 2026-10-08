@@ -1,0 +1,59 @@
+.marquee {
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+  padding: clamp(3rem, 9vh, 6rem) 0;
+  background: url('/images/grain-light.png') repeat, var(--c-bg);
+  border-top: 1px solid var(--c-line);
+  border-bottom: 1px solid var(--c-line);
+}
+
+.marquee__row {
+  display: flex;
+  width: max-content;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.marquee__row + .marquee__row {
+  margin-top: clamp(0.25rem, 1vh, 0.75rem);
+}
+
+.marquee__item {
+  display: inline-flex;
+  align-items: center;
+}
+
+.marquee__word {
+  font-family: var(--f-cond);
+  font-weight: 600;
+  font-size: clamp(3.5rem, 9vw, 10rem);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--c-text);
+}
+
+.marquee__word--outline {
+  font-weight: 500;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(242, 242, 242, 0.42);
+}
+
+/* small gold diamond between words */
+.marquee__sep {
+  display: inline-block;
+  width: clamp(0.5rem, 0.9vw, 0.8rem);
+  aspect-ratio: 1;
+  margin: 0 clamp(1.5rem, 3.5vw, 3.5rem);
+  background: var(--c-accent);
+  transform: rotate(45deg);
+}
+
+.marquee__row--b .marquee__word {
+  font-weight: 300;
+}
+
+.marquee__row--b .marquee__word--outline {
+  font-weight: 300;
+}

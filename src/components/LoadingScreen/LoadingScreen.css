@@ -1,0 +1,42 @@
+.loading {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: var(--c-bg);
+}
+
+.loading__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.loading__mark {
+  font-family: var(--f-cond);
+  font-weight: 500;
+  font-size: clamp(2.25rem, 4vw, 3rem);
+  letter-spacing: 0.42em;
+  margin-right: -0.42em; /* optically recentre the tracked word */
+  line-height: 1;
+}
+
+.loading__track {
+  position: relative;
+  display: block;
+  width: 168px;
+  height: 1px;
+  margin-top: 0.75rem;
+  background: var(--c-line);
+  overflow: hidden;
+}
+
+.loading__bar {
+  position: absolute;
+  inset: 0;
+  background: var(--c-accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+}

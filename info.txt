@@ -1,0 +1,824 @@
+ATENÇÃO: TUDO, ABSOLUTAMENTE TUDO DE IMPORTANTE QUE FOR MODIFICADO NO PROJETO DEVE SER SALVO NO ARQUIVO DE MEMORIA, CHAMADO MEMORIA, PRA VOCE SE LEMBRAR SEMRPE DE ONDE PAROU E QUAIS ETAPAS FEZ.
+
+# LAMBORGHINI SVJ — CINEMATIC SCROLL EXPERIENCE
+
+## 1. OBJETIVO DO PROJETO
+
+Criar uma landing page premium e cinematográfica focada exclusivamente na experiência visual de uma Lamborghini Aventador SVJ.
+
+O site deve transmitir:
+
+- luxo
+- velocidade
+- exclusividade
+- agressividade
+- tecnologia
+- estética automotiva premium
+
+A experiência principal do site será uma animação controlada pelo scroll.
+
+O usuário não deve sentir que está simplesmente assistindo a um vídeo.
+
+A sensação desejada é:
+
+> "Estou controlando a câmera e fazendo a Lamborghini atravessar a tela."
+
+O site deve parecer uma experiência digital de uma campanha oficial de uma marca automotiva de alto padrão.
+
+NÃO criar um site genérico de concessionária.
+
+NÃO usar aparência de template.
+
+NÃO utilizar excesso de cards, gradientes ou elementos decorativos sem função.
+
+A experiência visual deve ser minimalista, escura e extremamente refinada.
+
+---
+
+# 2. TECNOLOGIA
+
+Utilizar:
+
+- React
+- JavaScript
+- CSS
+- HTML
+- GSAP
+- GSAP ScrollTrigger
+
+NÃO utilizar TypeScript.
+
+NÃO utilizar uma biblioteca de componentes visual pesada.
+
+A animação principal deve ser construída com GSAP + ScrollTrigger.
+
+O código deve ser organizado, reutilizável e fácil de manter.
+
+---
+
+# 3. CONCEITO PRINCIPAL DA EXPERIÊNCIA
+
+A página começa completamente escura.
+
+O usuário vê a Lamborghini SVJ de frente, em um ambiente noturno muito escuro.
+
+O primeiro vídeo mostra:
+
+1. Lamborghini parada.
+2. Faróis inicialmente apagados/dim.
+3. Faróis começam a acender.
+4. Faróis ficam totalmente acesos.
+5. Lamborghini começa a avançar.
+6. Lamborghini acelera progressivamente.
+7. Lamborghini se aproxima da câmera.
+8. Lamborghini ocupa cada vez mais espaço na tela.
+9. Lamborghini passa extremamente próxima da câmera.
+10. Lamborghini atravessa a posição da câmera.
+11. O frame fica preenchido pelo carro.
+
+O segundo vídeo continua exatamente a partir desse momento.
+
+A câmera começa em uma posição baixa, abaixo/próxima do carro.
+
+Depois:
+
+1. A câmera sobe.
+2. Revela a Lamborghini de cima.
+3. Lamborghini continua avançando.
+4. A câmera acompanha o carro.
+5. A perspectiva passa para uma visão traseira.
+6. Lamborghini continua se afastando.
+
+O objetivo é fazer os dois vídeos parecerem uma única tomada contínua.
+
+---
+
+# 4. ESTRUTURA DA PÁGINA
+
+Estruturar a página nas seguintes seções:
+
+## SECTION 01 — HERO / THE APPROACH
+
+Tela inicial.
+
+Altura aproximada:
+
+100vh ou mais, dependendo da implementação da animação.
+
+O vídeo principal ocupa praticamente toda a viewport.
+
+Elementos de interface devem ser mínimos.
+
+Sugestão:
+
+No canto superior esquerdo:
+
+SVJ
+
+No canto superior direito:
+
+MENU
+
+Na parte inferior:
+
+SCROLL TO EXPERIENCE
+
+Não colocar grandes textos sobre o carro.
+
+A Lamborghini deve ser o protagonista absoluto.
+
+---
+
+# 5. ANIMAÇÃO PRINCIPAL DO HERO
+
+O vídeo do hero deve ser controlado pelo scroll.
+
+IMPORTANTE:
+
+Não reproduzir o vídeo automaticamente como um vídeo tradicional.
+
+O scroll do usuário deve controlar o progresso visual da animação.
+
+Implementar com GSAP ScrollTrigger.
+
+Conceito:
+
+scroll progress = video progress
+
+Quando o usuário começa a rolar:
+
+frame inicial → frames seguintes
+
+Quando o usuário para de rolar:
+
+o vídeo para naquele ponto.
+
+Quando o usuário continua:
+
+a animação continua.
+
+---
+
+# 6. COMPORTAMENTO DO SCROLL
+
+Criar uma área de scroll suficientemente longa para permitir controle preciso.
+
+Exemplo conceitual:
+
+Hero visual:
+100vh
+
+Área de animação:
+300vh–500vh
+
+O conteúdo visual permanece fixo/sticky enquanto o usuário percorre a sequência.
+
+Usar:
+
+position: sticky;
+
+ou uma estrutura equivalente controlada pelo GSAP.
+
+O vídeo deve permanecer preso à viewport enquanto a animação é controlada.
+
+---
+
+# 7. VÍDEO 1 — APROXIMAÇÃO
+
+O primeiro vídeo representa a primeira metade da experiência.
+
+Sequência:
+
+0% — Lamborghini parada.
+
+10% — ambiente ainda muito escuro.
+
+15–25% — faróis começam a acender.
+
+25–35% — faróis completamente acesos.
+
+35–50% — Lamborghini começa a avançar.
+
+50–70% — Lamborghini se aproxima rapidamente.
+
+70–90% — Lamborghini ocupa grande parte da tela.
+
+90–100% — Lamborghini passa pela câmera e preenche completamente o frame.
+
+IMPORTANTE:
+
+Não aplicar zoom digital para simular aproximação.
+
+O efeito deve vir do movimento real existente no vídeo.
+
+Não aplicar transformações que deformem o carro.
+
+---
+
+# 8. PONTO DE TRANSIÇÃO
+
+Este é o ponto mais importante de toda a experiência.
+
+O final do vídeo 1 mostra a Lamborghini passando diretamente pela câmera.
+
+O usuário deve sentir que o carro atravessou a tela.
+
+Nesse momento:
+
+- não mostrar uma tela preta
+- não mostrar um fade tradicional
+- não mostrar uma transição branca
+- não usar crossfade perceptível
+- não mostrar um corte evidente
+
+A transição deve ser escondida pelo próprio corpo da Lamborghini preenchendo o frame.
+
+O vídeo 2 deve começar visualmente conectado a esse momento.
+
+---
+
+# 9. VÍDEO 2 — CAMERA RISE
+
+O segundo vídeo começa imediatamente após o carro passar pela câmera.
+
+A câmera começa em uma posição muito baixa.
+
+A Lamborghini já está se afastando.
+
+A câmera sobe suavemente.
+
+A sequência visual:
+
+CARRO PASSA
+↓
+CÂMERA SOBE
+↓
+VISÃO DE CIMA
+↓
+CÂMERA ACOMPANHA
+↓
+VISÃO TRASEIRA
+↓
+CARRO SE AFASTA
+
+O segundo vídeo não deve reiniciar o movimento da Lamborghini.
+
+A sensação deve ser de continuidade.
+
+---
+
+# 10. CONTROLE DO SEGUNDO VÍDEO
+
+O segundo vídeo também deve ser controlado pelo scroll.
+
+Não fazer:
+
+Vídeo 1 toca inteiro → vídeo 2 toca automaticamente.
+
+Fazer:
+
+Scroll progressivo controla vídeo 1 e vídeo 2 como uma única experiência.
+
+Conceitualmente:
+
+0–50% do scroll:
+Vídeo 1
+
+50–100%:
+Vídeo 2
+
+A divisão exata pode ser ajustada durante o desenvolvimento para conseguir a melhor sensação.
+
+---
+
+# 11. TRANSIÇÃO ENTRE OS VÍDEOS
+
+Criar uma função central que controla qual vídeo está ativo.
+
+Pseudoestrutura:
+
+scrollProgress 0 → 1
+
+if progress < transitionPoint:
+    controlar video1
+
+else:
+    controlar video2
+
+No ponto de transição:
+
+- vídeo 1 termina
+- vídeo 2 começa no frame correspondente
+- ambos devem estar perfeitamente alinhados visualmente
+
+Evitar qualquer flash.
+
+Evitar tela branca.
+
+Evitar mudança repentina de exposição.
+
+Evitar mudança repentina de cor.
+
+---
+
+# 12. PALETA DE CORES
+
+A paleta deve ser extremamente escura.
+
+### Primary Background
+
+#050505
+
+### Secondary Background
+
+#0A0A0A
+
+### Surface
+
+#111111
+
+### Primary Text
+
+#F2F2F2
+
+### Secondary Text
+
+#8A8A8A
+
+### Accent
+
+#D4AF37
+
+O dourado deve ser usado com extrema moderação.
+
+Exemplos:
+
+- pequenos detalhes
+- linha de navegação
+- indicador de scroll
+- pequenos labels
+- microinterações
+
+NÃO utilizar dourado em grandes áreas.
+
+A Lamborghini deve continuar sendo o elemento visual dominante.
+
+---
+
+# 13. TIPOGRAFIA
+
+Utilizar uma combinação de:
+
+- fonte sans-serif moderna
+- fonte condensada para números/labels automotivos
+
+Priorizar fontes como:
+
+Inter
+Manrope
+Space Grotesk
+ou equivalente premium.
+
+Os textos devem ser:
+
+- uppercase quando forem labels
+- espaçados
+- pequenos
+- minimalistas
+
+Exemplo:
+
+SVJ
+
+01 / 03
+
+SCROLL TO EXPERIENCE
+
+---
+
+# 14. HEADER
+
+Header extremamente minimalista.
+
+Posição:
+
+fixed
+
+Elementos:
+
+ESQUERDA:
+
+SVJ
+
+DIREITA:
+
+MENU
+
+O header deve permanecer discreto durante a animação.
+
+Fundo transparente.
+
+Adicionar blur muito sutil somente quando necessário para legibilidade.
+
+Não criar uma navbar tradicional cheia de links.
+
+---
+
+# 15. INDICADOR DE SCROLL
+
+Criar um indicador discreto na parte inferior.
+
+Exemplo:
+
+SCROLL TO EXPERIENCE
+
+com uma pequena linha vertical ou horizontal animada.
+
+Quando o usuário começa a rolar:
+
+- o indicador desaparece suavemente.
+
+Não deixar elementos de UI competindo com a Lamborghini.
+
+---
+
+# 16. SEÇÃO APÓS A ANIMAÇÃO
+
+Depois que a Lamborghini terminar a sequência e estiver se afastando, criar uma seção editorial.
+
+Essa seção deve manter a mesma estética.
+
+Exemplo:
+
+SVJ
+
+Aventador SVJ
+
+6.5L V12
+
+770 CV
+
+0–100 km/h
+2.8s
+
+351 km/h
+TOP SPEED
+
+Os números devem ser apresentados de forma grande e elegante.
+
+Não transformar isso em cards tradicionais.
+
+Utilizar bastante espaço vazio.
+
+---
+
+# 17. SEÇÃO DE ESPECIFICAÇÕES
+
+Criar uma seção escura e minimalista.
+
+Layout:
+
+lado esquerdo:
+grande número / especificação
+
+lado direito:
+descrição curta
+
+Exemplo:
+
+770
+
+HORSEPOWER
+
+6.5L
+
+NATURALLY ASPIRATED V12
+
+2.8s
+
+0–100 KM/H
+
+351
+
+TOP SPEED
+
+As especificações devem aparecer progressivamente conforme o usuário rola.
+
+Usar animações sutis com GSAP.
+
+---
+
+# 18. SEÇÃO VISUAL / PERFORMANCE
+
+Criar uma seção dedicada à engenharia e performance.
+
+Não usar excesso de texto.
+
+Utilizar frases curtas.
+
+Exemplo:
+
+BUILT FOR PERFORMANCE.
+
+ENGINEERED WITHOUT COMPROMISE.
+
+NATURALLY ASPIRATED.
+
+V12 POWER.
+
+Cada frase pode aparecer com uma animação de entrada durante o scroll.
+
+---
+
+# 19. DIREÇÃO DE ARTE
+
+A direção visual deve seguir:
+
+Luxury automotive campaign
+
+Dark cinematic photography
+
+High contrast
+
+Minimal UI
+
+Premium editorial design
+
+Technical precision
+
+Não utilizar:
+
+- neon exagerado
+- gradientes coloridos
+- glassmorphism exagerado
+- cards arredondados em excesso
+- sombras coloridas
+- efeitos cyberpunk
+- excesso de animações
+- partículas desnecessárias
+
+A estética deve parecer cara.
+
+---
+
+# 20. MICROINTERAÇÕES
+
+Adicionar pequenas interações:
+
+- textos aparecendo suavemente
+- linhas expandindo
+- números entrando por baixo
+- pequenas mudanças de opacity
+- hover extremamente sutil
+- cursor customizado opcional
+
+Nada deve competir com o vídeo.
+
+---
+
+# 21. RESPONSIVIDADE
+
+Desktop é a prioridade porque a experiência cinematográfica depende da viewport grande.
+
+Entretanto, criar adaptação completa para:
+
+Desktop
+Tablet
+Mobile
+
+No mobile:
+
+- reduzir complexidade da animação se necessário
+- garantir que o carro continue visível
+- adaptar o enquadramento
+- preservar o controle pelo scroll
+- evitar que o vídeo fique cortado de maneira ruim
+
+Não simplesmente aplicar o mesmo layout desktop no mobile.
+
+---
+
+# 22. PERFORMANCE
+
+Esta parte é CRÍTICA.
+
+Vídeos podem ser pesados.
+
+Implementar:
+
+- preload adequado
+- lazy loading para vídeos secundários
+- poster image
+- compressão adequada
+- carregamento progressivo
+- evitar múltiplas reproduções simultâneas
+- liberar recursos quando necessário
+
+Nunca deixar os dois vídeos tocando simultaneamente.
+
+O vídeo que não estiver sendo utilizado deve permanecer pausado.
+
+---
+
+# 23. IMPLEMENTAÇÃO DO SCRUBBING
+
+O comportamento desejado é:
+
+Scroll ↓
+→ aumentar currentTime do vídeo.
+
+Scroll ↑
+→ diminuir currentTime.
+
+Não usar:
+
+video.play()
+
+como mecanismo principal da animação.
+
+Usar:
+
+video.currentTime
+
+controlado pelo progresso do ScrollTrigger.
+
+Exemplo conceitual:
+
+progress = self.progress
+
+video.currentTime = progress * video.duration
+
+Adicionar suavização apenas se necessário.
+
+O controle deve parecer diretamente conectado ao movimento do mouse/trackpad.
+
+---
+
+# 24. LOADING SCREEN
+
+Como os vídeos podem demorar para carregar, criar uma pequena tela inicial.
+
+Fundo:
+
+#050505
+
+Centro:
+
+SVJ
+
+Abaixo:
+
+LOADING EXPERIENCE
+
+Mostrar uma barra extremamente fina.
+
+Quando os assets principais estiverem prontos:
+
+fade out
+
+A experiência só começa quando o primeiro vídeo estiver suficientemente carregado.
+
+---
+
+# 25. TRANSIÇÃO DO LOADING PARA O HERO
+
+Não usar uma transição exagerada.
+
+Fazer:
+
+Loading screen
+↓
+fade out
+↓
+Lamborghini aparece no escuro
+↓
+usuário percebe os faróis
+↓
+scroll começa a controlar a experiência
+
+---
+
+# 26. ESTRUTURA DE COMPONENTES
+
+Organizar o projeto aproximadamente assim:
+
+App
+
+├── Header
+├── LoadingScreen
+├── HeroExperience
+│   ├── VideoStage
+│   ├── ScrollIndicator
+│   └── ExperienceController
+├── TransitionSection
+├── SpecsSection
+├── PerformanceSection
+└── Footer
+
+Separar lógica de animação da estrutura visual sempre que possível.
+
+---
+
+# 27. ARQUIVOS DE VÍDEO
+
+Considerar:
+
+/public/videos/svj-approach.mp4
+
+/public/videos/svj-overhead.mp4
+
+E:
+
+/public/images/svj-poster.webp
+
+Os nomes podem ser adaptados caso os arquivos tenham nomes diferentes.
+
+---
+
+# 28. REGRAS IMPORTANTES PARA O DESENVOLVIMENTO
+
+Não alterar os vídeos.
+
+Não aplicar filtros fortes aos vídeos.
+
+Não aplicar zoom artificial.
+
+Não deformar a Lamborghini.
+
+Não criar uma nova animação de carro em CSS.
+
+Os vídeos são o elemento principal.
+
+O código deve controlar a experiência ao redor deles.
+
+---
+
+# 29. EXPERIÊNCIA FINAL DESEJADA
+
+O usuário entra no site.
+
+A tela está quase completamente preta.
+
+Ele vê a silhueta da Lamborghini.
+
+Os faróis começam a acender.
+
+Ele começa a rolar.
+
+A Lamborghini começa a avançar.
+
+Ele continua rolando.
+
+A Lamborghini vem diretamente em sua direção.
+
+O carro cresce no viewport.
+
+A Lamborghini passa pela câmera.
+
+A tela é tomada pelo carro.
+
+O usuário continua rolando.
+
+A câmera agora está subindo.
+
+A Lamborghini aparece de cima.
+
+Ela continua avançando.
+
+A câmera acompanha.
+
+A perspectiva muda para a traseira.
+
+A Lamborghini se distancia.
+
+Então aparecem os números:
+
+770 CV
+
+6.5L V12
+
+2.8s
+
+351 KM/H
+
+A experiência continua com conteúdo editorial sobre o carro.
+
+O resultado final deve parecer uma campanha digital premium de uma fabricante de supercarros, e não uma landing page convencional.
+
+---
+
+# 30. PRIORIDADE ABSOLUTA
+
+Se houver conflito entre estética e funcionalidade, priorizar nesta ordem:
+
+1. Continuidade da animação
+2. Qualidade visual do vídeo
+3. Precisão do scroll
+4. Performance
+5. Responsividade
+6. Conteúdo textual
+7. Elementos decorativos
+
+A Lamborghini e a experiência de scroll são o produto principal da página.
+
+Todo o restante deve existir para valorizar essa experiência.

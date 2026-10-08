@@ -1,0 +1,227 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(var(--gutter) * 0.7 + env(safe-area-inset-top, 0px)) var(--gutter) calc(var(--gutter) * 0.7);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    color 0.5s var(--ease-out),
+    background-color 0.6s var(--ease-out),
+    backdrop-filter 0.6s var(--ease-out),
+    padding 0.6s var(--ease-out);
+}
+
+.header::after {
+  content: '';
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: 0;
+  height: 1px;
+  background: var(--c-line);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 1s var(--ease-out);
+}
+
+.header--solid {
+  background: rgba(5, 5, 5, 0.55);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  padding-top: calc(var(--gutter) * 0.45 + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(var(--gutter) * 0.45);
+}
+
+.header--solid::after {
+  transform: scaleX(1);
+}
+
+/* over the light Design spread */
+.header--light {
+  color: #0d0d0d;
+}
+
+.header--light.header--solid {
+  background: rgba(236, 234, 229, 0.72);
+}
+
+.header--light::after {
+  background: rgba(13, 13, 13, 0.14);
+}
+
+.header--open {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.header--open::after {
+  transform: scaleX(0);
+}
+
+.header__mark {
+  font-family: var(--f-cond);
+  font-weight: 500;
+  font-size: 1.125rem;
+  letter-spacing: 0.38em;
+  line-height: 1;
+}
+
+.header__menu {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.5rem 0;
+  color: inherit;
+}
+
+.header__menu-icon {
+  position: relative;
+  display: inline-block;
+  width: 22px;
+  height: 7px;
+}
+
+.header__menu-icon span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: currentColor;
+  transition:
+    transform 0.6s var(--ease-out),
+    width 0.6s var(--ease-out),
+    background-color 0.4s;
+}
+
+.header__menu-icon span:first-child {
+  top: 0;
+}
+
+.header__menu-icon span:last-child {
+  bottom: 0;
+  width: 60%;
+  left: auto;
+}
+
+.header__menu:hover .header__menu-icon span:last-child {
+  width: 100%;
+  background: var(--c-accent);
+}
+
+.header--open .header__menu-icon span:first-child {
+  transform: translateY(3px) rotate(45deg);
+}
+
+.header--open .header__menu-icon span:last-child {
+  width: 100%;
+  transform: translateY(-3px) rotate(-45deg);
+}
+
+/* ---------- menu overlay ---------- */
+
+.menu {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: calc(var(--gutter) * 3) var(--gutter) var(--gutter);
+  background: rgba(5, 5, 5, 0.97);
+  visibility: hidden;
+  opacity: 0;
+}
+
+.menu__list {
+  list-style: none;
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.menu__item {
+  position: relative;
+}
+
+.menu__line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: var(--c-line);
+  transform-origin: left center;
+}
+
+.menu__item:last-child::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--c-line);
+}
+
+.menu__link {
+  display: block;
+  padding: clamp(0.9rem, 2.2vh, 1.6rem) 0;
+}
+
+.menu__item-text {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(1.25rem, 4vw, 3.5rem);
+}
+
+.menu__index {
+  font-size: 1rem;
+  color: var(--c-text-2);
+  min-width: 2ch;
+  transition: color 0.4s;
+}
+
+.menu__label {
+  font-size: clamp(1.75rem, 4.6vw, 3.75rem);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  transition:
+    transform 0.6s var(--ease-out),
+    color 0.4s;
+}
+
+.menu__link:hover .menu__label,
+.menu__link:focus-visible .menu__label {
+  transform: translateX(0.35em);
+}
+
+.menu__link:hover .menu__index,
+.menu__link:focus-visible .menu__index {
+  color: var(--c-accent);
+}
+
+.menu__foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  max-width: 920px;
+  margin: clamp(2rem, 6vh, 4rem) auto 0;
+}
+
+@media (max-width: 767px) {
+  .header__mark {
+    font-size: 1rem;
+  }
+  .menu__foot {
+    flex-direction: column;
+  }
+}
