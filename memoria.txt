@@ -12,6 +12,18 @@ ETAPA 4 CONCLUÍDA — correções pedidas pelo usuário:
 - Build:  npm run build (gera dist/)
 - Próximos passos possíveis: ver "PENDÊNCIAS / IDEIAS" no fim do arquivo.
 
+## VERSIONAMENTO (GIT) — criado em 2026-10-08
+- Repositório git na pasta do projeto. Branch principal: main.
+- Tag v1-antes-dos-farois = versão aprovada ANTES do efeito de luz dos faróis (commit 2cb8e06).
+- Branch farois = versão COM os feixes de luz dos faróis no hero (em avaliação pelo usuário).
+- Comandos (terminal aberto na pasta do projeto):
+    ver a versão com os faróis ........ git switch farois
+    voltar para a versão anterior ...... git switch main
+    aprovar os faróis (virar oficial) .. git switch main   e depois   git merge farois
+    descartar os faróis ................ git switch main   e depois   git branch -D farois
+  O servidor (npm run dev) recarrega sozinho quando troca de branch.
+- Toda mudança importante daqui pra frente: commit com mensagem em português.
+
 ## ANÁLISE DOS VÍDEOS ORIGINAIS (pasta videos-lambo/, NÃO MODIFICAR)
 - Ambos: H.264, 720x1280 (VERTICAL 9:16), 24fps, 8s, 192 frames, com áudio.
 - VÍDEO 1 (aproximação) = "Lamborghini_accelerates_toward_c…_20261008141443.mp4"
