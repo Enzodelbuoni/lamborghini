@@ -73,18 +73,36 @@
     linear-gradient(0deg, rgba(5, 5, 5, 0.55) 0%, rgba(5, 5, 5, 0) 20%);
 }
 
-/* ---------- headlight beams (behind the clip) ----------
-   Each cone = a flat cool-white light, shaped by two masks:
-   a conic gradient (the beam's angular profile, brightest just outside the
-   clip, still alive at the corner) × a radial falloff from the headlight.
-   The dark grain dithers the soft gradient so it never bands. */
+/* ---------- light outside the clip (HeroLight.jsx) ----------
+   Everything sits behind the clip, so the footage always wins where it exists.
+   - beams: one cone per headlight = a flat cool-white light shaped by two
+     masks — a conic gradient (angular profile, still alive at the corner) ×
+     a radial falloff from the headlight;
+   - spill: the clip's own edge colours continued outwards (set per frame),
+     screened over the beams, so the lit floor never stops at a "wall".
+   Dark grain dithers the soft gradients so they never band. */
 
-.video-stage__beams {
+.video-stage__light {
   position: absolute;
   inset: 0;
   pointer-events: none;
   visibility: hidden;
+}
+
+.video-stage__beams {
+  position: absolute;
+  inset: 0;
   opacity: calc(var(--level, 0) * 0.46);
+}
+
+.video-stage__spill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  opacity: 0;
+  mix-blend-mode: screen;
+  background-repeat: repeat, no-repeat;
+  background-size: auto, 100% 100%;
 }
 
 .video-stage__beam {
@@ -158,7 +176,7 @@
 
 /* phones: the clip covers the whole stage, nothing would show */
 @media (max-aspect-ratio: 9/16) {
-  .video-stage__beams {
+  .video-stage__light {
     display: none;
   }
 }
@@ -177,11 +195,26 @@
   );
 }
 
-/* the clip is narrower than the screen → its sides dissolve into the page */
+/* the clip is narrower than the screen → its sides dissolve into the page.
+   Eased over 20 % of its width (FEATHER in HeroLight.jsx), where the edge
+   spill takes over at the same brightness. */
 @media (min-aspect-ratio: 9/16) {
   .video-stage__frame {
-    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 12%, #000 88%, transparent 100%);
-    mask-image: linear-gradient(90deg, transparent 0%, #000 12%, #000 88%, transparent 100%);
+    --feather: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0, 0, 0, 0.2) 5%,
+      rgba(0, 0, 0, 0.58) 11%,
+      rgba(0, 0, 0, 0.88) 16%,
+      #000 20%,
+      #000 80%,
+      rgba(0, 0, 0, 0.88) 84%,
+      rgba(0, 0, 0, 0.58) 89%,
+      rgba(0, 0, 0, 0.2) 95%,
+      transparent 100%
+    );
+    -webkit-mask-image: var(--feather);
+    mask-image: var(--feather);
   }
 }
 
@@ -544,8 +577,6 @@
     left: auto;
     right: var(--frame-right);
     transform: none;
-    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 14%, #000 88%, transparent 100%);
-    mask-image: linear-gradient(90deg, transparent 0%, #000 14%, #000 88%, transparent 100%);
   }
 
   .hero__shade {
@@ -618,8 +649,6 @@
     left: 50%;
     right: auto;
     transform: translateX(-50%);
-    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 13%, #000 87%, transparent 100%);
-    mask-image: linear-gradient(90deg, transparent 0%, #000 13%, #000 87%, transparent 100%);
   }
 
   .hero__frame-ui {

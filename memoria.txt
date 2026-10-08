@@ -3,11 +3,12 @@ MEMÓRIA DO PROJETO — LAMBORGHINI SVJ CINEMATIC SCROLL
 (Regra do info.txt: tudo de importante que for modificado deve ser registrado aqui.)
 
 ## STATUS ATUAL (2026-10-08)
-ETAPA 5 (branch farois, EM AVALIAÇÃO) — feixes de luz dos faróis no hero: quando os faróis acendem com o
-scroll, dois cones de luz saem por trás do vídeo e descem em V até os cantos inferiores do hero.
-Se o usuário não gostar: git switch main (volta exatamente para a versão da etapa 4).
+ETAPA 5.1 (branch farois, EM AVALIAÇÃO) — luz dos faróis refinada a pedido do usuário:
+  (a) as "paredes" do vídeo vertical cortavam a luz → a luz do chão agora CONTINUA além das bordas;
+  (b) início escuro muito pixelado → escurecimento só na abertura, antes dos faróis acenderem.
+Se o usuário não gostar: git switch main (volta para a versão da etapa 4, sem faróis).
 (ETAPA 1: base. 2: textos do hero + Design. 3: hero 3 colunas, galeria, Engine, Marquee, seção clara,
- grão, cursor. 4: contador à prova de falhas + grade bento no Design.)
+ grão, cursor. 4: contador à prova de falhas + grade bento. 5: feixes de luz dos faróis.)
 - Rodar:  npm install  →  npm run dev  →  http://localhost:5173
 - Build:  npm run build (gera dist/)
 - Próximos passos possíveis: ver "PENDÊNCIAS / IDEIAS" no fim do arquivo.
@@ -46,6 +47,25 @@ Se o usuário não gostar: git switch main (volta exatamente para a versão da e
 - Celular (vídeo cobre a tela toda): camada desligada (display: none). Tablet em pé: aparece nas laterais.
 - Testado: 3018x1102, 1920x1080, 1440x900, 1024x768 (split), 820x1180; acende/apaga nos pontos certos,
   inclusive voltando o scroll; transição de vídeo intacta; console sem erros.
+
+## ETAPA 5.1 — refinamentos da luz (componente renomeado: HeroBeams → HeroLight.jsx)
+- Problema 1: o chão do vídeo é muito claro e fora dele só havia a névoa dos feixes → as bordas laterais do
+  vídeo vertical apareciam como "paredes" cortando a luz.
+  Solução "spill" (continuação da borda): a cada frame exibido, lê as cores das 36 colunas da borda
+  esquerda/direita do vídeo (canvas 2x64, getImageData), suaviza na vertical, zera os pretos e monta um
+  degradê vertical que é estendido para fora do vídeo e some aos poucos (máscara com curva suave).
+  Fica atrás do vídeo, em mix-blend-mode: screen sobre os feixes, + grão contra banding.
+  Só o CHÃO vira luz: linhas acima da altura dos faróis são zeradas (antes, as lâmpadas do teto da
+  garagem viravam um risco horizontal).
+- Borda do vídeo: esfumado mais largo e suave (20% da largura, curva com vários pontos) e igual em todos
+  os layouts (variável --feather no CSS; FEATHER = 0.2 no HeroLight).
+- Problema 2: no começo (escuro) os blocos de compressão apareciam. Origem: o PRÓPRIO vídeo original
+  (gerado por IA, comprimido) — a recodificação não piorou (comparado lado a lado).
+  Solução: enquanto os faróis estão apagados, o vídeo recebe contrast(1.3) → os quase-pretos com blocos
+  viram preto puro; silhueta (reflexos) e faróis continuam visíveis. Some conforme os faróis acendem
+  (frame ~36 já está normal). SÓ na abertura (frames < 60): no fim da aproximação a luz também vai a 0,
+  e ali o vídeo não pode ser alterado para o corte com o vídeo 2 continuar com o mesmo brilho.
+- Celular: camada de luz oculta e sem leitura do vídeo (economia); o escurecimento inicial vale também.
 
 ## ANÁLISE DOS VÍDEOS ORIGINAIS (pasta videos-lambo/, NÃO MODIFICAR)
 - Ambos: H.264, 720x1280 (VERTICAL 9:16), 24fps, 8s, 192 frames, com áudio.
@@ -125,7 +145,7 @@ src/
       ChapterHud.jsx            → "01 / 03 IGNITION | 02 THE APPROACH | 03 CAMERA RISE" + linha de progresso
       ScrollIndicator.jsx       → "SCROLL TO EXPERIENCE" + linha animada; some ao rolar, volta no topo
     Marquee/                    → faixa com palavras gigantes (sólidas/contorno) que deslizam com o scroll
-    HeroExperience/HeroBeams.jsx → feixes de luz dos faróis (etapa 5), ver seção própria acima
+    HeroExperience/HeroLight.jsx → luz fora do vídeo: feixes + continuação da borda + escurecimento inicial
     EngineSection/              → id="engine": conta-giros SVG fixo na tela (sticky, 300vh); scroll gira o ponteiro
                                   0→8.500 rpm; "720 Nm" acende em 6.750 e "770 CV" em 8.500; faixa vermelha acende
     Cursor/                     → cursor customizado (ponto + anel, mix-blend difference) só p/ mouse/trackpad

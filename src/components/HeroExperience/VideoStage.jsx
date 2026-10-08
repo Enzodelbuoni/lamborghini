@@ -1,15 +1,15 @@
 import { SEGMENTS } from '../../config/experience'
-import HeroBeams from './HeroBeams'
+import HeroLight from './HeroLight'
 
 /**
- * Purely visual layer: the headlight beams, the two stacked clips (in front
- * of the beams) and the framing vignette. All behaviour lives in
+ * Purely visual layer: the light outside the clip (beams + edge spill), the two
+ * stacked clips in front of it and the framing vignette. All behaviour lives in
  * ExperienceController.
  */
-export default function VideoStage({ sources, videoRef, beamsRef }) {
+export default function VideoStage({ sources, videoRef, lightRef }) {
   return (
     <div className="video-stage">
-      <HeroBeams apiRef={beamsRef} />
+      <HeroLight apiRef={lightRef} />
 
       <div className="video-stage__frame">
         {SEGMENTS.map((segment, i) => (

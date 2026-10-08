@@ -20,7 +20,7 @@ export default function HeroExperience({ sources, phase, onReady }) {
   const copyTimelineRef = useRef(null)
   const galleryTimelineRef = useRef(null)
   const videosRef = useRef([])
-  const beamsRef = useRef(null)
+  const lightRef = useRef(null)
   const onReadyRef = useRef(onReady)
   onReadyRef.current = onReady
 
@@ -34,8 +34,8 @@ export default function HeroExperience({ sources, phase, onReady }) {
     controllerRef.current = new ExperienceController({
       segments: SEGMENTS,
       transitionPoint: TRANSITION_POINT,
-      // the beams follow the frame that is really on screen
-      onFrame: (video, segment, frame) => beamsRef.current?.show(segment, frame),
+      // the light outside the clip follows the frame that is really on screen
+      onFrame: (video, segment, frame) => lightRef.current?.show(segment, frame, video),
     })
   }
 
@@ -122,7 +122,7 @@ export default function HeroExperience({ sources, phase, onReady }) {
     <section ref={sectionRef} id="experience" className="hero" aria-label="Aventador SVJ — the approach">
       <div className="hero__stage">
         <div ref={mediaRef} className="hero__media">
-          <VideoStage sources={sources} videoRef={registerVideo} beamsRef={beamsRef} />
+          <VideoStage sources={sources} videoRef={registerVideo} lightRef={lightRef} />
           <div className="hero__shade" aria-hidden="true" />
         </div>
 
